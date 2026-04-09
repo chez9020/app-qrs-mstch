@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Shaq Event</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Dashboard</h1>
+        
+        <div class="card toolbar" style="margin-bottom: 20px;">
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <label>Desde:</label>
+                <input type="datetime-local" id="start-date" class="search-bar" style="margin:0; width:auto;">
+                <label>Hasta:</label>
+                <input type="datetime-local" id="end-date" class="search-bar" style="margin:0; width:auto;">
+                <button class="btn" onclick="fetchStats()" style="width:auto; margin:0; padding: 10px 20px;">Filtrar 🔍</button>
+                <button class="btn" onclick="clearFilters()" style="width:auto; margin:0; padding: 10px 20px; background:#333; border:1px solid white;">Limpiar</button>
+            </div>
+        </div>
+
+        <div class="card stat-card">
+            <h3>Total Invitados</h3>
+            <div id="total-guests" class="stat-value">0</div>
+        </div>
+        
+        <div class="card stat-card">
+            <h3>Ingresados (en rango)</h3>
+            <div id="checked-in-count" class="stat-value">0</div>
+        </div>
+
+        <div class="card stat-card">
+            <h3>% Asistencia</h3>
+            <div id="attendance-rate" class="stat-value">0%</div>
+        </div>
+
+        <div class="card">
+            <h3>Ingresos Recientes</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Hora</th>
+                    </tr>
+                </thead>
+                <tbody id="recent-checkins">
+                    <!-- Rows here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 
+        <div class="card">
+            <h3>Lista de Invitados & QRs</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>QR</th>
+                    </tr>
+                </thead>
+                <tbody id="guest-list-qrs">
+                    <!- - Guest Rows here - ->
+                </tbody>
+            </table>
+        </div>
+        -->
+
+        <div class="nav-bar">
+            <a href="/" class="nav-item">🏠</a>
+            <a href="/scanner" class="nav-item">📷</a>
+            <a href="/dashboard" class="nav-item" style="color: white; border-bottom: 2px solid var(--primary-color);">📊</a>
+            <a href="/capturas" class="nav-item">📸</a>
+            <a href="/invitados" class="nav-item">👥</a>
+        </div>
+    </div>
+
+    <script>
+        async function fetchStats() {
+            try {
+                const startDate = document.getElementById('start-date').value;
+                const endDate = document.getElementById('end-date').value;
+                
+                let url = '/api/dashboard/stats';
+                const params = new URLSearchParams();
+                if (startDate) params.append('start_date', startDate);
+                if (endDate) params.append('end_date', endDate);
+                
+                if (params.toString()) url += '?' + params.toString();
+
+                // Fetch stats
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('total-guests').innerText = data.total_guests;
+                    document.getElementById('checked-in-count').innerText = data.checked_in_count;
+                    document.getElementById('attendance-rate').innerText = data.attendance_rate.toFixed(1) + '%';
+                    
+                    const tbody = document.getElementById('recent-checkins');
+                    tbody.innerHTML = '';
+                    data.recent_checkins.forEach(guest => {
+                        const tr = document.createElement('tr');
+                        const time = new Date(guest.scan_timestamp).toLocaleString();
+                        tr.innerHTML = `<td>${guest.name}</td><td>${time}</td>`; 
+                        tbody.appendChild(tr);
+                    });
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function clearFilters() {
+            document.getElementById('start-date').value = '';
+            document.getElementById('end-date').value = '';
+            fetchStats();
+        }
+
+        function downloadURI(uri, name) {
+            var link = document.createElement("a");
+            link.download = name;
+            link.href = uri;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        fetchStats();
+        setInterval(fetchStats, 10000); // Update every 10 seconds with current filters
+    </script>
+</body>
+</html>

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Invitados | Shaq Event</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        .container { max-width: 900px; }
+        .table-container { overflow-x: auto; max-height: 60vh; overflow-y: auto; }
+        .qr-thumb { width: 50px; height: 50px; object-fit: contain; background: white; padding: 2px; }
+        .success-msg { color: var(--success-color); margin-top: 10px; font-weight: bold; }
+        .error-msg { color: var(--error-color); margin-top: 10px; font-weight: bold; }
+        .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GESTIÓN DE INVITADOS</h1>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('guests')">Lista de Invitados</div>
+            <div class="tab" onclick="switchTab('qrs')">Descarga de QRs</div>
+        </div>
+
+        <!-- TAB 1: LISTA TOTAL & EXPORT -->
+        <div id="tab-guests" class="tab-content active">
+            <div class="card">
+                <div class="toolbar">
+                    <input type="text" id="search-guest" class="search-bar" placeholder="Buscar por nombre..." onkeyup="filterTable('guest-table', 'search-guest', 1)">
+                    <button class="btn" onclick="exportTableToCSV('guest-table', 'invitados_shaq.csv')" style="width: auto; margin:0;">Exportar CSV 📥</button>
+                    <button class="btn" onclick="loadGuests()" style="width: auto; margin:0; background: #333; border: 1px solid white;">🔄 Recargar</button>
+                </div>
+                
+                <div class="table-container">
+                    <table id="guest-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th>Checked In</th>
+                            </tr>
+                        </thead>
+                        <tbody id="guest-tbody">
+                            <!-- JS load -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: GALERÍA Y DESCARGA DE QRS -->
+        <div id="tab-qrs" class="tab-content">
+            <div class="card">
+                <div class="toolbar">
+                    <input type="text" id="search-qr" class="search-bar" placeholder="Buscar QR por nombre..." onkeyup="filterTable('qr-table', 'search-qr', 2)">
+                    <button class="btn" onclick="downloadSelectedQRs()" style="width: auto; margin:0;">Descargar Seleccionados (ZIP)</button>
+                    <button class="btn" onclick="toggleSelectAll(this)" style="width: auto; margin:0; background: #333; border: 1px solid white;">Seleccionar Todos</button>
+                </div>
+
+                <div class="table-container">
+                    <table id="qr-table">
+                        <thead>
+                            <tr>
+                                <th>🆗</th>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>QR Vista Previa</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="qr-tbody">
+                            <!-- JS load -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="download-status"></div>
+            </div>
+        </div>
+
+        <div class="nav-bar">
+            <a href="/" class="nav-item">🏠</a>
+            <a href="/scanner" class="nav-item">📷</a>
+            <a href="/dashboard" class="nav-item">📊</a>
+        </div>
+    </div>
+
+    <script>
+        let allGuests = [];
+
+        // Tab Switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            // Find tab by text content is tricky, better by index or specific class. 
+            // Simplified:
+            if(tabName === 'guests') {
+                document.querySelectorAll('.tab')[0].classList.add('active');
+                document.getElementById('tab-guests').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab')[1].classList.add('active');
+                document.getElementById('tab-qrs').classList.add('active');
+            }
+        }
+
+        // LOAD DATA
+        async function loadGuests() {
+            const tbody = document.getElementById('guest-tbody');
+            const qrBody = document.getElementById('qr-tbody');
+            tbody.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
+            qrBody.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
+
+            try {
+                const res = await fetch('/api/guests/all');
+                if (!res.ok) throw new Error('Error al cargar datos');
+                allGuests = await res.json();
+
+                // Sort by ID numeric if possible
+                allGuests.sort((a,b) => parseInt(a.id) - parseInt(b.id));
+
+                renderGuestsParams(allGuests);
+
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="5" class="error-msg">${e.message}</td></tr>`;
+            }
+        }
+
+        function renderGuestsParams(data) {
+            const tbody = document.getElementById('guest-tbody');
+            const qrBody = document.getElementById('qr-tbody');
+            tbody.innerHTML = '';
+            qrBody.innerHTML = '';
+
+            data.forEach(g => {
+                // Tabla Invitados
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${g.id}</td>
+                    <td>${g.name}</td>
+                    <td>${g.email || '-'}</td>
+                    <td>${g.status}</td>
+                    <td>${g.scan_timestamp ? new Date(g.scan_timestamp).toLocaleString() : '-'}</td>
+                `;
+                tbody.appendChild(row);
+
+                // Tabla QRs
+                const qrRow = document.createElement('tr');
+                // Extract filename from URL is hard without backend logic, but we can assume logic or just use URL
+                // We'll store the qr_code_url in checkbox value for now? 
+                // Or better, we need the filename for the backend ZIP. 
+                // Currently backend receives list of filenames.
+                // Let's use the object structure: current_id + "_" + safe_name + ".png"
+                // But reproducing "safe_name" in JS exactly as python is risky.
+                // Workaround: We will send list of Image URLs and let backend handle it? Or modify backend to accept URLs?
+                // BETTER: The backend 'download-qrs' downloads ALL. 
+                // FOR SELECTED: Client-side ZIP using JSZip is heavy but safer? 
+                // Or implementing a 'download-selection' in backend that accepts a list of filenames.
+                // Let's try to assume filenames are safe enough or simply use the existing big download if user wants.
+                // The user asked for "download selected".
+                // I'll assume for now we can select and download INDIVIDUAL via link, and if they want ZIP, we download ALL with the existing button or we implement specific backend logic.
+                // Re-reading user request: "pueda elegir cuales descargar".
+                
+                qrRow.innerHTML = `
+                    <td><input type="checkbox" class="qr-check" value="${g.qr_code_url}" data-name="${g.name}"></td>
+                    <td>${g.id}</td>
+                    <td>${g.name}</td>
+                    <td><a href="${g.qr_code_url}" target="_blank"><img src="${g.qr_code_url}" class="qr-thumb" loading="lazy"></a></td>
+                    <td>
+                        <button class="action-btn" onclick="downloadOne('${g.qr_code_url}', '${g.name}.png')">⬇</button>
+                    </td>
+                `;
+                qrBody.appendChild(qrRow);
+            });
+        }
+
+        // CSV Export
+        function exportTableToCSV(tableId, filename) {
+            const csv = [];
+            const rows = document.querySelectorAll(`#${tableId} tr`);
+            
+            for (let i = 0; i < rows.length; i++) {
+                const row = [], cols = rows[i].querySelectorAll("td, th");
+                for (let j = 0; j < cols.length; j++) 
+                    row.push('"' + cols[j].innerText + '"'); // Quote strings
+                csv.push(row.join(","));
+            }
+
+            downloadCSV(csv.join("\n"), filename);
+        }
+
+        function downloadCSV(csv, filename) {
+            const csvFile = new Blob([csv], {type: "text/csv"});
+            const downloadLink = document.createElement("a");
+            downloadLink.download = filename;
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+        }
+
+        // Filter Function
+        function filterTable(tableId, inputId, colIndex) {
+            const input = document.getElementById(inputId);
+            const filter = input.value.toUpperCase();
+            const table = document.getElementById(tableId);
+            const tr = table.getElementsByTagName("tr");
+
+            for (let i = 1; i < tr.length; i++) {
+                const td = tr[i].getElementsByTagName("td")[colIndex];
+                if (td) {
+                    const txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
+        // Single Download
+        function downloadOne(url, name) {
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = name;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Select All
+        function toggleSelectAll(btn) {
+            const checks = document.querySelectorAll('.qr-check');
+            const allSelected = Array.from(checks).every(c => c.checked);
+            checks.forEach(c => c.checked = !allSelected);
+            btn.innerText = allSelected ? "Seleccionar Todos" : "Deseleccionar Todos";
+        }
+
+        // Download Selected ZIP (Client Side for simplicity and precision with URLs)
+        // Since we have the URLs, we can fetch them and zip them in browser or send URLs to backend.
+        // Given dependencies complexity, simplest "Dignified" way if backend 'download-all' exists:
+        // Use backend /download-qrs for ALL. 
+        // For partial, warn user or just download one by one?
+        // Let's implement a simple Client Side ZIP using a Script if possible, or just allow multi-tab open?
+        // Actually, user asked "elegir cuales descargar". 
+        // I will implement a JS loop that downloads them individually with a small delay to avoid blocking. 
+        // It's the most robust without changing backend logic for "Partial ZIP generation from URLs".
+        
+        async function downloadSelectedQRs() {
+            const checked = document.querySelectorAll('.qr-check:checked');
+            if (checked.length === 0) {
+                alert("Selecciona al menos uno");
+                return;
+            }
+
+            if (checked.length > 5) {
+                if(!confirm(`Vas a descargar ${checked.length} imágenes. Se abrirán múltiples descargas. ¿Seguir? (Para muchos, mejor usa el botón de Descargar Todo del backend)`)) return;
+            }
+
+            const status = document.getElementById('download-status');
+            status.innerText = "Iniciando descarga...";
+            
+            let count = 0;
+            for (const chk of checked) {
+                const url = chk.value;
+                const name = chk.dataset.name + ".png";
+                
+                // Force download
+                try {
+                    const response = await fetch(url);
+                    const blob = await response.blob();
+                    const link = document.createElement("a");
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = name;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } catch(e) {
+                    console.error("Error downloading", name, e);
+                }
+                
+                count++;
+                status.innerText = `Descargado ${count} de ${checked.length}`;
+                await new Promise(r => setTimeout(r, 500)); // 500ms delay to be nice
+            }
+            status.innerText = "¡Descargas finalizadas!";
+            setTimeout(() => status.innerText = "", 3000);
+        }
+
+        // Init
+        loadGuests();
+    </script>
+</body>
+</html>

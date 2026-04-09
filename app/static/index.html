@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shaq O'Neal Private Event | Access</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Shaq O'Neal Private Event</h1>
+        
+        <div id="menu-section" class="card">
+            <h2>Menú Principal</h2>
+            <div class="button-group">
+                <a href="/scanner" class="btn">Escáner QR</a>
+                <a href="/dashboard" class="btn">Dashboard</a>
+            </div>
+            <div class="card">
+                <h3>Cargar Invitados (CSV)</h3>
+                <input type="file" id="csv-file" accept=".csv, .xlsx">
+                <button id="upload-btn" class="btn">Subir</button>
+                <p id="upload-status"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadBtn = document.getElementById('upload-btn');
+
+        uploadBtn.addEventListener('click', async () => {
+             const fileInput = document.getElementById('csv-file');
+             if(fileInput.files.length === 0) return;
+             
+             const formData = new FormData();
+             formData.append('file', fileInput.files[0]);
+             
+             try {
+                const response = await fetch('/api/guests/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                if(response.ok) {
+                    document.getElementById('upload-status').innerText = "Carga exitosa! Redirigiendo...";
+                    setTimeout(() => window.location.href = '/dashboard', 1500);
+                } else {
+                    document.getElementById('upload-status').innerText = "Error en la carga.";
+                }
+             } catch (e) {
+                 document.getElementById('upload-status').innerText = "Error.";
+             }
+        });
+    </script>
+</body>
+</html>

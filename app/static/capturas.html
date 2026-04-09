@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capturas de Ingreso | Shaq Event</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        .container { max-width: 900px; }
+        .table-container { overflow-x: auto; max-height: 70vh; overflow-y: auto; }
+        .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Capturas de Ingreso</h1>
+        
+        <div class="card toolbar">
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <label>Desde:</label>
+                <input type="datetime-local" id="start-date" class="search-bar" style="margin:0; width:auto;">
+                <label>Hasta:</label>
+                <input type="datetime-local" id="end-date" class="search-bar" style="margin:0; width:auto;">
+                <button class="btn" onclick="fetchCapturas()" style="width:auto; margin:0; padding: 10px 20px;">Filtrar 🔍</button>
+                <button class="btn" onclick="clearFilters()" style="width:auto; margin:0; padding: 10px 20px; background:#333; border:1px solid white;">Limpiar</button>
+                <button class="btn" onclick="exportCSV()" style="width:auto; margin:0; padding: 10px 20px; background:var(--primary-color); color:black;">Exportar CSV</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="table-container">
+                <table id="capturas-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>UUID</th>
+                            <th>Fecha/Hora Ingreso</th>
+                        </tr>
+                    </thead>
+                    <tbody id="capturas-tbody">
+                        <!-- Data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="count-summary" style="margin-top:15px; font-weight:bold; color:var(--primary-color);">
+                Total capturas en rango: <span id="total-count">0</span>
+            </div>
+        </div>
+
+        <div class="nav-bar">
+            <a href="/" class="nav-item">🏠</a>
+            <a href="/scanner" class="nav-item">📷</a>
+            <a href="/dashboard" class="nav-item">📊</a>
+            <a href="/invitados" class="nav-item">👥</a>
+        </div>
+    </div>
+
+    <script>
+        async function fetchCapturas() {
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            
+            let url = '/api/dashboard/stats';
+            const params = new URLSearchParams();
+            if (startDate) params.append('start_date', startDate);
+            if (endDate) params.append('end_date', endDate);
+            params.append('all_checkins', 'true');
+            
+            if (params.toString()) url += '?' + params.toString();
+
+            try {
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    const tbody = document.getElementById('capturas-tbody');
+                    tbody.innerHTML = '';
+                    
+                    // Note: recent_checkins only gives top 10. 
+                    // I should probably have a separate endpoint for ALL capturas if I want a full list.
+                    // For now, I'll use recent_checkins but ideally the API should return more if filtered.
+                    // Let's modify the API to return ALL filtered checkins if a flag is passed.
+                    
+                    data.recent_checkins.forEach(g => {
+                        const tr = document.createElement('tr');
+                        const time = new Date(g.scan_timestamp).toLocaleString();
+                        tr.innerHTML = `
+                            <td>${g.id}</td>
+                            <td>${g.name}</td>
+                            <td style="font-size:0.8rem; font-family:monospace;">${g.uuid}</td>
+                            <td>${time}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                    
+                    document.getElementById('total-count').innerText = data.checked_in_count;
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function clearFilters() {
+            document.getElementById('start-date').value = '';
+            document.getElementById('end-date').value = '';
+            fetchCapturas();
+        }
+
+        function exportCSV() {
+            const table = document.getElementById("capturas-table");
+            let csv = [];
+            for (let i = 0; i < table.rows.length; i++) {
+                let row = [], cols = table.rows[i].querySelectorAll("td, th");
+                for (let j = 0; j < cols.length; j++) 
+                    row.push('"' + cols[j].innerText + '"');
+                csv.push(row.join(","));
+            }
+            const csvContent = "data:text/csv;charset=utf-8," + csv.join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "capturas_ingreso.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        fetchCapturas();
+    </script>
+</body>
+</html>

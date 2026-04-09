@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner | Shaq Event</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>ACCESS SCANNER</h1>
+        <div id="reader" style="width: 100%;"></div>
+        <div id="status-overlay" class="status-screen" style="display:none;">
+            <h1 id="status-message"></h1>
+            <h2 id="guest-name"></h2>
+        </div>
+
+        <div class="nav-bar">
+            <a href="/" class="nav-item">🏠</a>
+            <a href="/scanner" class="nav-item" style="color: white; border-bottom: 2px solid var(--primary-color);">📷</a>
+            <a href="/dashboard" class="nav-item">📊</a>
+            <a href="/capturas" class="nav-item">📸</a>
+            <a href="/invitados" class="nav-item">👥</a>
+        </div>
+    </div>
+
+    <script>
+        const statusOverlay = document.getElementById('status-overlay');
+        const statusMessage = document.getElementById('status-message');
+        const guestName = document.getElementById('guest-name');
+        let isScanning = true;
+
+        function onScanSuccess(decodedText, decodedResult) {
+            if (!isScanning) return;
+            isScanning = false;
+
+            fetch('/api/scanner/validate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ uuid: decodedText })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showStatus(data);
+                setTimeout(() => {
+                    hideStatus();
+                    isScanning = true;
+                }, 2000);
+            })
+            .catch(err => {
+                console.error(err);
+                isScanning = true;
+            });
+        }
+
+        function showStatus(data) {
+            statusOverlay.style.display = 'flex';
+            statusOverlay.className = 'status-screen'; // reset
+            
+            if (data.status === 'success') {
+                statusOverlay.classList.add('status-valid');
+                statusMessage.innerText = "BIENVENIDO";
+            } else if (data.status === 'warning') {
+                statusOverlay.classList.add('status-warning');
+                statusMessage.innerText = "YA REGISTRADO";
+            } else {
+                statusOverlay.classList.add('status-invalid');
+                statusMessage.innerText = "INVALIDO";
+            }
+            guestName.innerText = data.guest_name || "";
+        }
+
+        function hideStatus() {
+            statusOverlay.style.display = 'none';
+        }
+
+        const html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", { fps: 10, qrbox: 250 });
+        html5QrcodeScanner.render(onScanSuccess);
+    </script>
+</body>
+</html>
