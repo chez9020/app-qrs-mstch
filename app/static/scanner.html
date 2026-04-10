@@ -276,15 +276,29 @@
         async function onScanSuccess(decodedText) {
             if (!isScanning) return;
             try {
-                const res = await fetch(`/api/guests/validate/${decodedText}`);
+                const res = await fetch('/api/scanner/validate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uuid: decodedText })
+                });
+                
                 const data = await res.json();
-                if (res.status === 200) showStatus('valid', data.guest_name);
-                else if (res.status === 409) showStatus('warning', '', `${data.guest_name} ya realizó el check-in.`);
-                else showStatus('invalid');
+                
+                if (res.status === 200) {
+                    showStatus('valid', data.guest_name);
+                } else if (res.status === 409) {
+                    showStatus('warning', '', `${data.guest_name || 'Este invitado'} ya realizó el check-in.`);
+                } else if (res.status === 404) {
+                    showStatus('invalid');
+                } else {
+                    showStatus('invalid');
+                }
             } catch (e) {
+                console.error("Scan error:", e);
                 showStatus('invalid');
             }
         }
+
 
         html5QrCode.start(
             { facingMode: "environment" },

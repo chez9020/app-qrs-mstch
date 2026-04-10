@@ -28,11 +28,16 @@ async def validate_guest(scan: ScanRequest):
     doc_ref = db.collection(collection_name).document(uuid_to_check)
     doc = doc_ref.get()
     
+    from fastapi.responses import JSONResponse
+    
     if not doc.exists:
-        return ValidationResponse(
-            status="error",
-            message="No registrado",
-            timestamp=timestamp
+        return JSONResponse(
+            status_code=404,
+            content={
+                "status": "error",
+                "message": "No registrado",
+                "timestamp": timestamp.isoformat() if timestamp else None
+            }
         )
     
     guest_data = doc.to_dict()
@@ -45,25 +50,32 @@ async def validate_guest(scan: ScanRequest):
             "scan_timestamp": timestamp
         })
         
-        return ValidationResponse(
-            status="success",
-            message=f"Bienvenido {guest_data.get('name')}",
-            guest_name=guest_data.get('name'),
-            timestamp=timestamp
-        )
+        return {
+            "status": "success",
+            "message": f"Bienvenido {guest_data.get('name')}",
+            "guest_name": guest_data.get('name'),
+            "timestamp": timestamp
+        }
     
     elif current_status == GuestStatus.CHECKED_IN.value:
-        return ValidationResponse(
-            status="warning",
-            message="Ya utilizado",
-            guest_name=guest_data.get('name'),
-            timestamp=guest_data.get("scan_timestamp")
+        return JSONResponse(
+            status_code=409,
+            content={
+                "status": "warning",
+                "message": "Ya utilizado",
+                "guest_name": guest_data.get('name'),
+                "timestamp": guest_data.get("scan_timestamp").isoformat() if guest_data.get("scan_timestamp") else None
+            }
         )
     
     else:
-        return ValidationResponse(
-            status="error",
-            message="Invitación inválida",
-            guest_name=guest_data.get('name'),
-            timestamp=timestamp
+        return JSONResponse(
+            status_code=400,
+            content={
+                "status": "error",
+                "message": "Invitación inválida",
+                "guest_name": guest_data.get('name'),
+                "timestamp": timestamp.isoformat() if timestamp else None
+            }
         )
+
