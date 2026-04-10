@@ -190,201 +190,224 @@
     <a href="/capturas" class="nav-item"><span class="material-icons-round">photo_camera</span>INGRESOS</a>
 </nav>
 
-<script>
-    let allGuests = [], filteredGuests = [], currentPage = 1;
-    const pageSize = 25;
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-    function openModal({ icon, iconType='', title, text, showCancel=true, confirmText='CONFIRMAR', onConfirm }) {
-        const wrap = document.getElementById('modal-icon-wrap');
-        wrap.className = 'modal-icon-wrap' + (iconType ? ' '+iconType : '');
-        document.getElementById('modal-icon').innerText = icon;
-        document.getElementById('modal-title').innerText = title;
-        document.getElementById('modal-text').innerText = text;
-        document.getElementById('btn-modal-cancel').style.display = showCancel ? '' : 'none';
-        const old = document.getElementById('btn-modal-confirm');
-        const btn = old.cloneNode(true);
-        btn.innerText = confirmText;
-        old.parentNode.replaceChild(btn, old);
-        btn.onclick = () => { closeModal(); if (onConfirm) onConfirm(); };
-        document.getElementById('custom-modal').classList.add('visible');
-    }
-    function closeModal() { document.getElementById('custom-modal').classList.remove('visible'); }
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyC-1fl9GwYuNCs73BIL45iIZTu5V5k5Y6E",
+            authDomain: "shaq-brand-bot.firebaseapp.com",
+            projectId: "shaq-brand-bot",
+            storageBucket: "shaq-brand-bot.firebasestorage.app",
+            messagingSenderId: "612926027116",
+            appId: "1:612926027116:web:1cee7d950033c3f7faaf49"
+        };
 
-    async function saveGuestName(uuid, newName, el) {
-        const originalName = allGuests.find(g => g.uuid === uuid).name;
-        const updatedName = newName.trim();
-        if(updatedName === originalName || updatedName === '') {
-            el.innerText = originalName;
-            return;
-        }
-        
-        try {
-            el.style.opacity = '0.5';
-            const res = await fetch(`/api/guests/${uuid}/name`, {
-                method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({name: updatedName})
-            });
-            
-            if(res.ok) {
-                const g = allGuests.find(g => g.uuid === uuid);
-                if(g) g.name = updatedName;
-                const fg = filteredGuests.find(g => g.uuid === uuid);
-                if(fg) fg.name = updatedName;
-            } else {
-                throw new Error('Error en servidor');
-            }
-        } catch(e) {
-            console.error(e);
-            el.innerText = originalName;
-            openModal({icon:'error', iconType:'error', title:'Error', text:'No se pudo actualizar el nombre.', showCancel:false, confirmText:'CERRAR'});
-        } finally {
-            el.style.opacity = '1';
-        }
-    }
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-    async function saveGuestStatus(uuid, newStatus, el) {
-        const originalStatus = allGuests.find(g => g.uuid === uuid).status;
-        if(newStatus === originalStatus) return;
-        
-        try {
-            el.disabled = true;
-            el.style.opacity = '0.5';
+        let allGuests = [], filteredGuests = [], currentPage = 1;
+        const pageSize = 25;
+
+        // Listener en tiempo real con onSnapshot
+        function startRealtimeListener() {
+            const tbody = document.getElementById('guest-tbody');
             
-            const res = await fetch(`/api/guests/${uuid}/status`, {
-                method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({status: newStatus})
-            });
-            
-            if(res.ok) {
-                const updateGuest = (g) => {
-                    if(!g) return;
-                    g.status = newStatus;
-                    if(newStatus === 'valid') delete g.scan_timestamp;
-                    else if(newStatus === 'checked_in') g.scan_timestamp = new Date().toISOString();
-                };
-                updateGuest(allGuests.find(g => g.uuid === uuid));
-                updateGuest(filteredGuests.find(g => g.uuid === uuid));
+            // Escuchar cambios en la colección 'guests'
+            db.collection("guests").onSnapshot((querySnapshot) => {
+                const guests = [];
+                querySnapshot.forEach((doc) => {
+                    guests.push(doc.to_dict());
+                });
+
+                // Actualizar datos globales
+                allGuests = guests;
+                // Mantener el orden por ID consecutivo
+                allGuests.sort((a,b) => parseInt(a.id_consecutivo||0) - parseInt(b.id_consecutivo||0));
                 
-                render(); // Re-render to update the timestamp column appropriately
-            } else {
-                throw new Error('Error en servidor');
-            }
-        } catch(e) {
-            console.error(e);
-            el.value = originalStatus;
-            openModal({icon:'error', iconType:'error', title:'Error', text:'No se pudo actualizar estatus.', showCancel:false, confirmText:'CERRAR'});
-        } finally {
-            el.disabled = false;
-            el.style.opacity = '1';
+                // Aplicar filtro actual si existe
+                const q = document.getElementById('search-input').value.toLowerCase();
+                filteredGuests = allGuests.filter(g => g.name.toLowerCase().includes(q));
+                
+                render();
+                console.log("Tabla actualizada en tiempo real.");
+            }, (error) => {
+                console.error("Error en tiempo real:", error);
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:#ff6b60">Error de conexión real: ${error.message}</td></tr>`;
+            });
         }
-    }
 
-    async function loadGuests() {
-        document.getElementById('guest-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:#555">Cargando...</td></tr>';
-        try {
-            const res = await fetch('/api/guests/all');
-            allGuests = await res.json();
-            allGuests.sort((a,b) => parseInt(a.id_consecutivo||0) - parseInt(b.id_consecutivo||0));
-            filteredGuests = [...allGuests];
+        function openModal({ icon, iconType='', title, text, showCancel=true, confirmText='CONFIRMAR', onConfirm }) {
+            const wrap = document.getElementById('modal-icon-wrap');
+            wrap.className = 'modal-icon-wrap' + (iconType ? ' '+iconType : '');
+            document.getElementById('modal-icon').innerText = icon;
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-text').innerText = text;
+            document.getElementById('btn-modal-cancel').style.display = showCancel ? '' : 'none';
+            const old = document.getElementById('btn-modal-confirm');
+            const btn = old.cloneNode(true);
+            btn.innerText = confirmText;
+            old.parentNode.replaceChild(btn, old);
+            btn.onclick = () => { closeModal(); if (onConfirm) onConfirm(); };
+            document.getElementById('custom-modal').classList.add('visible');
+        }
+        function closeModal() { document.getElementById('custom-modal').classList.remove('visible'); }
+
+        async function saveGuestName(uuid, newName, el) {
+            const guest = allGuests.find(g => g.uuid === uuid);
+            if(!guest) return;
+            const originalName = guest.name;
+            const updatedName = newName.trim();
+            if(updatedName === originalName || updatedName === '') {
+                el.innerText = originalName;
+                return;
+            }
+            
+            try {
+                el.style.opacity = '0.5';
+                const res = await fetch(`/api/guests/${uuid}/name`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({name: updatedName})
+                });
+                
+                if(!res.ok) throw new Error('Error en servidor');
+                // Nota: onSnapshot actualizará la UI automáticamente cuando Firestore registre el cambio
+            } catch(e) {
+                console.error(e);
+                el.innerText = originalName;
+                openModal({icon:'error', iconType:'error', title:'Error', text:'No se pudo actualizar el nombre.', showCancel:false, confirmText:'CERRAR'});
+            } finally {
+                el.style.opacity = '1';
+            }
+        }
+
+        async function saveGuestStatus(uuid, newStatus, el) {
+            const guest = allGuests.find(g => g.uuid === uuid);
+            if(!guest) return;
+            const originalStatus = guest.status;
+            if(newStatus === originalStatus) return;
+            
+            try {
+                el.disabled = true;
+                el.style.opacity = '0.5';
+                
+                const res = await fetch(`/api/guests/${uuid}/status`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({status: newStatus})
+                });
+                
+                if(!res.ok) throw new Error('Error en servidor');
+                // Nota: onSnapshot actualizará la UI automáticamente
+            } catch(e) {
+                console.error(e);
+                el.value = originalStatus;
+                openModal({icon:'error', iconType:'error', title:'Error', text:'No se pudo actualizar estatus.', showCancel:false, confirmText:'CERRAR'});
+            } finally {
+                el.disabled = false;
+                el.style.opacity = '1';
+            }
+        }
+
+        function applyFilter() {
+            const q = document.getElementById('search-input').value.toLowerCase();
+            filteredGuests = allGuests.filter(g => g.name.toLowerCase().includes(q));
             currentPage = 1;
             render();
-        } catch(e) {
-            document.getElementById('guest-tbody').innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:#ff6b60">Error: ${e.message}</td></tr>`;
         }
-    }
 
-    function applyFilter() {
-        const q = document.getElementById('search-input').value.toLowerCase();
-        filteredGuests = allGuests.filter(g => g.name.toLowerCase().includes(q));
-        currentPage = 1;
-        render();
-    }
-
-    function render() {
-        const tbody = document.getElementById('guest-tbody');
-        const start = (currentPage-1)*pageSize;
-        const page = filteredGuests.slice(start, start+pageSize);
-        if (!page.length) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:#555">Sin resultados.</td></tr>';
-        } else {
-            tbody.innerHTML = page.map(g => `
-                <tr>
-                    <td class="td-id">${g.id_consecutivo||'-'}</td>
-                    <td class="td-id" style="color:#d858a3">${g.id}</td>
-                    <td class="td-name" contenteditable="true" spellcheck="false" 
-                        onblur="saveGuestName('${g.uuid}', this.innerText, this)" 
-                        onkeydown="if(event.key === 'Enter') { event.preventDefault(); this.blur(); }">${g.name}</td>
-                    <td class="td-email">${g.email||'-'}</td>
-                    <td class="td-uuid">${(g.uuid||'').slice(0,12)}...</td>
-                    <td>
-                        <select class="status-select ${g.status==='checked_in'?'checked-in':'valid'}" onchange="saveGuestStatus('${g.uuid}', this.value, this)">
-                            <option value="valid" ${g.status==='valid'?'selected':''}>VALID</option>
-                            <option value="checked_in" ${g.status==='checked_in'?'selected':''}>CHECKED IN</option>
-                        </select>
-                    </td>
-                    <td style="color:#555;font-size:12px">${g.scan_timestamp?formatDate(g.scan_timestamp):'-'}</td>
-                </tr>`).join('');
-        }
-        const total = Math.ceil(filteredGuests.length/pageSize);
-        let pag = `<button class="pg-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
-        for(let i=1;i<=total;i++) {
-            if(i<=2||i===total||Math.abs(i-currentPage)<=1) pag+=`<button class="pg-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
-            else if(Math.abs(i-currentPage)===2) pag+=`<span style="color:#555;padding:0 2px">…</span>`;
-        }
-        pag+=`<button class="pg-btn" onclick="goPage(${currentPage+1})" ${currentPage>=total||total===0?'disabled':''}>›</button>`;
-        document.getElementById('pagination').innerHTML = pag;
-        const end = Math.min(start+pageSize, filteredGuests.length);
-        document.getElementById('showing-text').innerText = `MOSTRANDO ${filteredGuests.length>0?start+1:0}–${end} DE ${filteredGuests.length}`;
-    }
-
-    function goPage(p) {
-        const t = Math.ceil(filteredGuests.length/pageSize);
-        if(p<1||p>t) return;
-        currentPage=p;
-        render();
-        window.scrollTo({top:0,behavior:'smooth'});
-    }
-
-    function formatDate(ts) {
-        try { return new Date(ts).toLocaleString('es-MX'); } catch { return ts; }
-    }
-
-    function exportTableToCSV() {
-        const h = ['ID','Unique ID','Nombre','Correo','UUID','Status','Checked In'];
-        const r = filteredGuests.map(g => [g.id_consecutivo||'', g.id, `"${g.name}"`, g.email||'', g.uuid, g.status, g.scan_timestamp?formatDate(g.scan_timestamp):'']);
-        const csv = [h,...r].map(x=>x.join(',')).join('\n');
-        const a = Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([csv],{type:'text/csv'})),download:'invitados_mstch.csv'});
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    }
-
-    async function resetDatabase() {
-        openModal({ icon:'delete_sweep', title:'Borrar Firestore', text:'Se eliminarán TODOS los invitados permanentemente.', confirmText:'SÍ, BORRAR',
-            onConfirm: async () => {
-                try {
-                    const res = await fetch('/api/guests/delete-all',{method:'DELETE'});
-                    const data = await res.json();
-                    openModal({icon:'check_circle',iconType:'success',title:'Completado',text:data.message,showCancel:false,confirmText:'ACEPTAR'});
-                    loadGuests();
-                } catch(e) { openModal({icon:'error',iconType:'error',title:'Error',text:e.message,showCancel:false,confirmText:'CERRAR'}); }
+        function render() {
+            const tbody = document.getElementById('guest-tbody');
+            const start = (currentPage-1)*pageSize;
+            const page = filteredGuests.slice(start, start+pageSize);
+            if (!page.length) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:#555">Sin resultados.</td></tr>';
+            } else {
+                tbody.innerHTML = page.map(g => `
+                    <tr>
+                        <td class="td-id">${g.id_consecutivo||'-'}</td>
+                        <td class="td-id" style="color:#d858a3">${g.id}</td>
+                        <td class="td-name" contenteditable="true" spellcheck="false" 
+                            onblur="saveGuestName('${g.uuid}', this.innerText, this)" 
+                            onkeydown="if(event.key === 'Enter') { event.preventDefault(); this.blur(); }">${g.name}</td>
+                        <td class="td-email">${g.email||'-'}</td>
+                        <td class="td-uuid">${(g.uuid||'').slice(0,12)}...</td>
+                        <td>
+                            <select class="status-select ${g.status==='checked_in'?'checked-in':'valid'}" onchange="saveGuestStatus('${g.uuid}', this.value, this)">
+                                <option value="valid" ${g.status==='valid'?'selected':''}>VALID</option>
+                                <option value="checked_in" ${g.status==='checked_in'?'selected':''}>CHECKED IN</option>
+                            </select>
+                        </td>
+                        <td style="color:#555;font-size:12px">${g.scan_timestamp?formatDate(g.scan_timestamp):'-'}</td>
+                    </tr>`).join('');
             }
-        });
-    }
-
-    async function resetBucket() {
-        openModal({ icon:'cloud_off', title:'Borrar Bucket QRS', text:'Se eliminarán TODAS las imágenes QR del almacenamiento Cloud.', confirmText:'SÍ, BORRAR',
-            onConfirm: async () => {
-                try {
-                    const res = await fetch('/api/guests/delete-qrs-bucket',{method:'DELETE'});
-                    const data = await res.json();
-                    openModal({icon:'check_circle',iconType:'success',title:'Completado',text:data.message,showCancel:false,confirmText:'ACEPTAR'});
-                } catch(e) { openModal({icon:'error',iconType:'error',title:'Error',text:e.message,showCancel:false,confirmText:'CERRAR'}); }
+            const total = Math.ceil(filteredGuests.length/pageSize);
+            let pag = `<button class="pg-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+            for(let i=1;i<=total;i++) {
+                if(i<=2||i===total||Math.abs(i-currentPage)<=1) pag+=`<button class="pg-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+                else if(Math.abs(i-currentPage)===2) pag+=`<span style="color:#555;padding:0 2px">…</span>`;
             }
-        });
-    }
+            pag+=`<button class="pg-btn" onclick="goPage(${currentPage+1})" ${currentPage>=total||total===0?'disabled':''}>›</button>`;
+            document.getElementById('pagination').innerHTML = pag;
+            const end = Math.min(start+pageSize, filteredGuests.length);
+            document.getElementById('showing-text').innerText = `MOSTRANDO ${filteredGuests.length>0?start+1:0}–${end} DE ${filteredGuests.length}`;
+        }
 
-    loadGuests();
-</script>
+        function goPage(p) {
+            const t = Math.ceil(filteredGuests.length/pageSize);
+            if(p<1||p>t) return;
+            currentPage=p;
+            render();
+            window.scrollTo({top:0,behavior:'smooth'});
+        }
+
+        function formatDate(ts) {
+            if(!ts) return '-';
+            try { 
+                // Manejar tanto objetos Date, strings ISO como Timestamps de Firebase
+                const d = ts.toDate ? ts.toDate() : new Date(ts);
+                return d.toLocaleString('es-MX'); 
+            } catch { return ts; }
+        }
+
+        function exportTableToCSV() {
+            const h = ['ID','Unique ID','Nombre','Correo','UUID','Status','Checked In'];
+            const r = filteredGuests.map(g => [g.id_consecutivo||'', g.id, `"${g.name}"`, g.email||'', g.uuid, g.status, g.scan_timestamp?formatDate(g.scan_timestamp):'']);
+            const csv = [h,...r].map(x=>x.join(',')).join('\n');
+            const a = Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([csv],{type:'text/csv'})),download:'invitados_mstch.csv'});
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        }
+
+        async function resetDatabase() {
+            openModal({ icon:'delete_sweep', title:'Borrar Firestore', text:'Se eliminarán TODOS los invitados permanentemente.', confirmText:'SÍ, BORRAR',
+                onConfirm: async () => {
+                    try {
+                        const res = await fetch('/api/guests/all?delete_all=true',{method:'DELETE'});
+                        // Nota: El listener onSnapshot se encargará de vaciar la tabla automáticamente
+                    } catch(e) { console.error(e); }
+                }
+            });
+        }
+
+        async function resetBucket() {
+            openModal({ icon:'cloud_off', title:'Borrar Bucket QRS', text:'Se eliminarán TODAS las imágenes QR del almacenamiento Cloud.', confirmText:'SÍ, BORRAR',
+                onConfirm: async () => {
+                    try {
+                        const res = await fetch('/api/guests/delete-qrs-bucket',{method:'DELETE'});
+                        const data = await res.json();
+                        openModal({icon:'check_circle',iconType:'success',title:'Completado',text:data.message,showCancel:false,confirmText:'ACEPTAR'});
+                    } catch(e) { openModal({icon:'error',iconType:'error',title:'Error',text:e.message,showCancel:false,confirmText:'CERRAR'}); }
+                }
+            });
+        }
+
+        // Iniciar el listener en lugar de loadGuests
+        startRealtimeListener();
+    </script>
+
 </body>
 </html>
