@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from app.routers import guests, scanner, dashboard
 import os
 
-app = FastAPI(title="QR-Access Event Manager | Shaq O'Neal Private Event")
+app = FastAPI(title="MSTCH Digital | QR-Access Manager")
 
 # Mount Routers
 # app.include_router(auth.router)
@@ -19,20 +19,25 @@ templates = Jinja2Templates(directory="app/static")
 
 @app.get("/")
 async def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="index.html")
 
 @app.get("/scanner")
 async def read_scanner(request: Request):
-    return templates.TemplateResponse("scanner.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="scanner.html")
 
 @app.get("/dashboard")
 async def read_dashboard(request: Request):
-    return templates.TemplateResponse("dashboard.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="dashboard.html")
 
 @app.get("/invitados")
 async def read_invitados(request: Request):
-    return templates.TemplateResponse("invitados.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="invitados.html")
+
+@app.get("/descarga-qrs")
+async def read_descarga_qrs(request: Request):
+    return templates.TemplateResponse(request=request, name="descarga_qrs.html")
+
 
 @app.get("/capturas")
 async def read_capturas(request: Request):
-    return templates.TemplateResponse("capturas.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="capturas.html")

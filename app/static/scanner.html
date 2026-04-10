@@ -3,84 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scanner | Shaq Event</title>
+    <title>MSTCH Digital | Check-in</title>
     <link rel="stylesheet" href="/static/css/styles.css">
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        .mstch-logo-complex {
+            position: absolute;
+            top: 21px;
+            right: 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .mstch-logo-complex svg { width: 88px; height: 53px; }
+
+        .scanner-container {
+            width: 1008px;
+            height: 432px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            position: absolute;
+            background: rgba(25, 25, 31, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 32px;
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            box-shadow: 0px 8px 32px 0px rgba(0,0,0,0.8);
+        }
+
+        .icon-box {
+            width: 93px;
+            height: 93px;
+            background: rgba(216, 88, 163, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .action-cluster {
+            display: flex;
+            gap: 16px;
+            margin-top: 32px;
+        }
+
+        .btn-magenta {
+            background: #d858a3;
+            color: black;
+            border: none;
+            border-radius: 9999px;
+            padding: 11px 32px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            box-shadow: 0px 0px 20px 0px rgba(223, 142, 255, 0.3);
+            text-transform: none;
+        }
+
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f8f5fd;
+            border-radius: 9999px;
+            padding: 11px 33px;
+            font-weight: 500;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            backdrop-filter: blur(6px);
+        }
+
+        /* Hide scanner UI until needed */
+        #reader {
+            width: 100% !important;
+            border: none !important;
+            display: none;
+        }
+        #reader video { border-radius: 20px; }
+
+        .active-scan #scanner-landing { display: none; }
+        .active-scan #reader { display: block; }
+    </style>
 </head>
-<body>
-    <div class="container">
-        <h1>ACCESS SCANNER</h1>
-        <div id="reader" style="width: 100%;"></div>
-        <div id="status-overlay" class="status-screen" style="display:none;">
-            <h1 id="status-message"></h1>
-            <h2 id="guest-name"></h2>
+<body class="bg-black">
+    <div class="mstch-logo-complex">
+        <img src="https://mstch.com/wp-content/uploads/2022/10/logo_mstch_blanco_website.png" alt="MSTCH" style="height: 53px;">
+    </div>
+
+    <div class="main-wrapper animate-fade-in">
+        <header class="header-section" style="margin-bottom: 20px;">
+
+            <span class="system-tag">SISTEMA DE REGISTRO</span>
+            <h1 style="font-size: 36px;">Check-in</h1>
+        </header>
+
+        <main class="glass-card" id="main-ui" style="height: 432px; width: 1008px; display: flex; align-items: center; justify-content: center; margin: 0;">
+            <div id="scanner-landing" style="text-align: center;">
+                <div class="card-icon-box" style="width: 93px; height: 93px; margin: 0 auto 24px auto;">
+                    <span class="material-icons-round" style="color: #d858a3; font-size: 40px;">photo_camera</span>
+                </div>
+                <h2 style="font-size: 32px; color: #f8f5fd; margin-bottom: 8px;">Tu acceso comienza aquí</h2>
+                <p style="color: #acaab1; font-size: 16px;">Escanea tu código QR para ingresar al evento.</p>
+                
+                <div class="action-cluster" style="justify-content: center;">
+                    <button class="btn-magenta" onclick="startScanner()">Request Camera Permissions</button>
+                    <button class="btn-outline">Scan an Image File <span class="material-icons-round" style="font-size: 14px;">upload</span></button>
+                </div>
+            </div>
+
+            <div id="reader"></div>
+        </main>
+    </div>
+     <div id="status-overlay" class="status-screen" style="display:none;">
+             <div class="glass-card" style="padding: 40px; text-align: center; border-radius: 32px;">
+                <h1 id="status-message"></h1>
+                <h2 id="guest-name" style="margin-top: 16px;"></h2>
+             </div>
         </div>
 
-        <div class="nav-bar">
-            <a href="/" class="nav-item">🏠</a>
-            <a href="/scanner" class="nav-item" style="color: white; border-bottom: 2px solid var(--primary-color);">📷</a>
-            <a href="/dashboard" class="nav-item">📊</a>
-            <a href="/capturas" class="nav-item">📸</a>
-            <a href="/invitados" class="nav-item">👥</a>
-        </div>
+        <nav class="nav-bar">
+            <a href="/" class="nav-item">
+                <span class="material-icons-round">home</span>
+                HOME
+            </a>
+            <a href="/scanner" class="nav-item active">
+                <span class="material-icons-round">qr_code_scanner</span>
+                ESCANEAR
+            </a>
+            <a href="/dashboard" class="nav-item">
+                <span class="material-icons-round">dashboard</span>
+                DASHBOARD
+            </a>
+            <a href="/invitados" class="nav-item">
+                <span class="material-icons-round">people</span>
+                INVITADOS
+            </a>
+            <a href="/capturas" class="nav-item">
+                <span class="material-icons-round">photo_camera</span>
+                INGRESOS
+            </a>
+        </nav>
     </div>
 
     <script>
+        const html5QrCode = new Html5Qrcode("reader");
+        const landing = document.getElementById('scanner-landing');
+        const mainUI = document.getElementById('main-ui');
         const statusOverlay = document.getElementById('status-overlay');
-        const statusMessage = document.getElementById('status-message');
-        const guestName = document.getElementById('guest-name');
-        let isScanning = true;
+
+        function startScanner() {
+            landing.style.display = 'none';
+            document.getElementById('reader').style.display = 'block';
+            
+            const config = { fps: 10, qrbox: { width: 300, height: 300 } };
+            
+            html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess);
+        }
 
         function onScanSuccess(decodedText, decodedResult) {
-            if (!isScanning) return;
-            isScanning = false;
+            html5QrCode.stop().then(() => {
+                validateScan(decodedText);
+            }).catch(err => {
+                console.error(err);
+                validateScan(decodedText);
+            });
+        }
 
-            fetch('/api/scanner/validate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ uuid: decodedText })
-            })
-            .then(response => response.json())
-            .then(data => {
+        async function validateScan(uuid) {
+            try {
+                const response = await fetch('/api/scanner/validate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uuid: uuid })
+                });
+                const data = await response.json();
                 showStatus(data);
+                
                 setTimeout(() => {
                     hideStatus();
-                    isScanning = true;
-                }, 2000);
-            })
-            .catch(err => {
-                console.error(err);
-                isScanning = true;
-            });
+                    startScanner(); // Restart after bit
+                }, 3000);
+            } catch (e) {
+                console.error(e);
+            }
         }
 
         function showStatus(data) {
             statusOverlay.style.display = 'flex';
-            statusOverlay.className = 'status-screen'; // reset
+            const msg = document.getElementById('status-message');
+            const name = document.getElementById('guest-name');
+            name.innerText = data.guest_name || "";
             
             if (data.status === 'success') {
-                statusOverlay.classList.add('status-valid');
-                statusMessage.innerText = "BIENVENIDO";
-            } else if (data.status === 'warning') {
-                statusOverlay.classList.add('status-warning');
-                statusMessage.innerText = "YA REGISTRADO";
+                msg.innerText = "¡BIENVENIDO!";
+                msg.style.color = "var(--success-color)";
             } else {
-                statusOverlay.classList.add('status-invalid');
-                statusMessage.innerText = "INVALIDO";
+                msg.innerText = data.message.toUpperCase();
+                msg.style.color = "var(--error-color)";
             }
-            guestName.innerText = data.guest_name || "";
         }
 
         function hideStatus() {
             statusOverlay.style.display = 'none';
         }
-
-        const html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader", { fps: 10, qrbox: 250 });
-        html5QrcodeScanner.render(onScanSuccess);
     </script>
 </body>
 </html>

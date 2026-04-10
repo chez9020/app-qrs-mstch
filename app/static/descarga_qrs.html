@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Descarga QR | MSTCH Digital</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        .mstch-logo-complex {
+            position: fixed;
+            top: 21px;
+            right: 18px;
+            z-index: 100;
+        }
+        .main-wrapper {
+            max-width: 1184px;
+            margin: 0 auto;
+            padding: 55px 48px 120px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        /* ── HEADER ── */
+        .page-header {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .system-tag {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--primary-color);
+        }
+        .page-header h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin: 0;
+            line-height: 1.1;
+        }
+        .page-header p { color: #bfbfbf; font-size: 14px; margin: 0; }
+
+        /* ── TOOLBAR ── */
+        .toolbar-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+        .search-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(28, 27, 27, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 12px 20px;
+            width: 360px;
+            backdrop-filter: blur(10px);
+        }
+        .search-wrapper .material-icons-round { color: var(--primary-color); font-size: 20px; }
+        .search-wrapper input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            font-size: 14px;
+            font-family: var(--font-main);
+            width: 100%;
+        }
+        .search-wrapper input::placeholder { color: #78716c; }
+
+        .toolbar-actions { display: flex; gap: 12px; align-items: center; }
+
+        .btn-outline-action {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            font-family: var(--font-main);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 13px 22px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-outline-action:hover { border-color: rgba(255,255,255,0.4); }
+
+        .btn-magenta-action {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--primary-color);
+            color: white;
+            font-family: var(--font-main);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 13px 22px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            line-height: 1.3;
+            text-align: center;
+        }
+        .btn-magenta-action:hover { opacity: 0.85; }
+        .btn-magenta-action:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* ── TABLE ── */
+        .table-card {
+            background: rgba(28, 27, 27, 0.6);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 16px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        .mstch-table { width: 100%; border-collapse: collapse; }
+        .mstch-table thead tr { background: rgba(28,27,27,0.5); }
+        .mstch-table th {
+            padding: 20px 24px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: white;
+        }
+        .mstch-table th:first-child { width: 80px; text-align: center; }
+        .mstch-table tbody tr {
+            border-top: 1px solid rgba(255,255,255,0.05);
+            transition: background 0.15s;
+        }
+        .mstch-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+        .mstch-table td {
+            padding: 18px 24px;
+            font-size: 14px;
+            color: #d3c4af;
+            vertical-align: middle;
+        }
+        .mstch-table td:first-child { text-align: center; }
+
+        /* Custom checkbox */
+        .qr-check {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary-color);
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .td-id { font-size: 14px; color: #a8a29e; font-weight: 600; }
+        .td-name { font-weight: 700; color: #e5e2e1; font-size: 15px; }
+        .td-email { color: #a8a29e; }
+
+        .qr-thumb {
+            width: 44px;
+            height: 44px;
+            border-radius: 6px;
+            background: white;
+            padding: 3px;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        .qr-thumb:hover { transform: scale(1.1); }
+
+        /* ── FOOTER ── */
+        .table-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            background: rgba(28,27,27,0.3);
+        }
+        .showing-text {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #78716c;
+        }
+        .pagination-btns { display: flex; align-items: center; gap: 6px; }
+        .pg-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #a8a29e;
+            background: transparent;
+            transition: all 0.15s;
+        }
+        .pg-btn:hover:not(:disabled) { border-color: rgba(255,255,255,0.3); color: white; }
+        .pg-btn.active { background: var(--primary-color); border-color: var(--primary-color); color: white; }
+        .pg-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        /* ── DOWNLOAD PROGRESS ── */
+        .download-toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(28,27,27,0.95);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            padding: 16px 28px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            display: none;
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+            gap: 12px;
+            align-items: center;
+        }
+        .download-toast.visible { display: flex; }
+
+        /* count badge on button */
+        .sel-count {
+            background: rgba(0,0,0,0.3);
+            padding: 2px 8px;
+            border-radius: 99px;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body class="bg-black">
+    <div class="mstch-logo-complex">
+        <img src="https://mstch.com/wp-content/uploads/2022/10/logo_mstch_blanco_website.png" alt="MSTCH" style="height: 53px;">
+    </div>
+
+    <div class="main-wrapper animate-fade-in">
+
+        <!-- HEADER -->
+        <div class="page-header">
+            <span class="system-tag">SISTEMA DE REGISTRO</span>
+            <h1>Descarga QR</h1>
+            <p>Gestión de invitados</p>
+        </div>
+
+        <!-- TOOLBAR -->
+        <div class="toolbar-row">
+            <div class="search-wrapper">
+                <span class="material-icons-round">search</span>
+                <input type="text" id="search-input" placeholder="Buscar QR por nombre" oninput="applyFilter()">
+            </div>
+            <div class="toolbar-actions">
+                <button class="btn-outline-action" onclick="toggleSelectAll()">
+                    SELECCIONAR TODOS
+                </button>
+                <button class="btn-magenta-action" id="btn-download" onclick="downloadSelected()" disabled>
+                    <span class="material-icons-round" style="font-size:18px;">download</span>
+                    DESCARGAR<br>SELECCIONADOS <span class="sel-count" id="sel-count">0</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-card">
+            <table class="mstch-table" id="qr-table">
+                <thead>
+                    <tr>
+                        <th>OK</th>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>QR Vista Previa</th>
+                    </tr>
+                </thead>
+                <tbody id="qr-tbody">
+                    <tr><td colspan="5" style="text-align:center; padding:40px; color:#78716c;">Cargando...</td></tr>
+                </tbody>
+            </table>
+
+            <div class="table-footer">
+                <span class="showing-text" id="showing-text">MOSTRANDO 0 REGISTROS</span>
+                <div class="pagination-btns" id="pagination"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Download Toast -->
+    <div class="download-toast" id="download-toast">
+        <span class="material-icons-round" style="color: var(--primary-color);">downloading</span>
+        <span id="toast-text">Descargando...</span>
+    </div>
+
+    <nav class="nav-bar">
+        <a href="/" class="nav-item"><span class="material-icons-round">home</span>HOME</a>
+        <a href="/scanner" class="nav-item"><span class="material-icons-round">qr_code_scanner</span>ESCANEAR</a>
+        <a href="/dashboard" class="nav-item"><span class="material-icons-round">dashboard</span>DASHBOARD</a>
+        <a href="/invitados" class="nav-item active"><span class="material-icons-round">people</span>INVITADOS</a>
+        <a href="/capturas" class="nav-item"><span class="material-icons-round">photo_camera</span>INGRESOS</a>
+    </nav>
+
+    <script>
+        let allGuests = [];
+        let filteredGuests = [];
+        let currentPage = 1;
+        const pageSize = 25;
+        // Track selection in memory (not in DOM) to persist across pages
+        const selectedUuids = new Set();
+
+        async function loadGuests() {
+            try {
+                const res = await fetch('/api/guests/all');
+                allGuests = await res.json();
+                allGuests.sort((a, b) => parseInt(a.id) - parseInt(b.id));
+                filteredGuests = [...allGuests];
+                render();
+            } catch (e) {
+                document.getElementById('qr-tbody').innerHTML =
+                    '<tr><td colspan="5" style="text-align:center; padding:40px; color:#e74c3c;">Error al cargar datos.</td></tr>';
+            }
+        }
+
+        function applyFilter() {
+            const q = document.getElementById('search-input').value.toLowerCase();
+            filteredGuests = allGuests.filter(g => g.name.toLowerCase().includes(q));
+            currentPage = 1;
+            render();
+        }
+
+        function render() {
+            const tbody = document.getElementById('qr-tbody');
+            const start = (currentPage - 1) * pageSize;
+            const pageData = filteredGuests.slice(start, start + pageSize);
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px; color:#78716c;">Sin resultados.</td></tr>';
+            } else {
+                tbody.innerHTML = pageData.map(g => `
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="qr-check" 
+                                data-url="${g.qr_code_url}" 
+                                data-name="${escapeAttr(g.name)}"
+                                data-uuid="${g.uuid}"
+                                ${selectedUuids.has(g.uuid) ? 'checked' : ''}
+                                onchange="onCheckChange(this, '${g.uuid}')">
+                        </td>
+                        <td class="td-id">${g.id}</td>
+                        <td class="td-name">${g.name}</td>
+                        <td class="td-email">${g.email || '-'}</td>
+                        <td>
+                            <a href="${g.qr_code_url}" target="_blank">
+                                <img src="${g.qr_code_url}" class="qr-thumb" title="Ver QR de ${g.name}">
+                            </a>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            renderPagination();
+            updateCounter();
+        }
+
+        function escapeAttr(str) {
+            return String(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        function onCheckChange(checkbox, uuid) {
+            if (checkbox.checked) {
+                selectedUuids.add(uuid);
+            } else {
+                selectedUuids.delete(uuid);
+            }
+            updateCounter();
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredGuests.length / pageSize);
+            const start = (currentPage - 1) * pageSize;
+            const end = Math.min(start + pageSize, filteredGuests.length);
+            document.getElementById('showing-text').innerText =
+                `SHOWING ${start + 1}-${end} OF ${filteredGuests.length.toLocaleString()} VERIFIED ENTRIES`;
+
+            let html = `<button class="pg-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹</button>`;
+            const totalPageCount = Math.ceil(filteredGuests.length / pageSize);
+            for (let i = 1; i <= totalPageCount; i++) {
+                if (i <= 2 || i === totalPageCount || Math.abs(i - currentPage) <= 1) {
+                    html += `<button class="pg-btn ${i === currentPage ? 'active' : ''}" onclick="goPage(${i})">${i}</button>`;
+                } else if (Math.abs(i - currentPage) === 2) {
+                    html += `<span style="color:#78716c; padding:0 4px;">...</span>`;
+                }
+            }
+            html += `<button class="pg-btn" onclick="goPage(${currentPage + 1})" ${currentPage >= totalPageCount || totalPageCount === 0 ? 'disabled' : ''}>›</button>`;
+            document.getElementById('pagination').innerHTML = html;
+        }
+
+        function goPage(page) {
+            const totalPages = Math.ceil(filteredGuests.length / pageSize);
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            render();
+        }
+
+        function updateCounter() {
+            const count = selectedUuids.size;
+            document.getElementById('sel-count').innerText = count;
+            document.getElementById('btn-download').disabled = count === 0;
+        }
+
+        function toggleSelectAll() {
+            const btn = document.querySelector('.btn-outline-action');
+            const allFilteredSelected = filteredGuests.every(g => selectedUuids.has(g.uuid));
+
+            if (allFilteredSelected) {
+                // Deselect all filtered
+                filteredGuests.forEach(g => selectedUuids.delete(g.uuid));
+                btn.innerText = 'SELECCIONAR TODOS';
+            } else {
+                // Select all filtered guests (across all pages)
+                filteredGuests.forEach(g => selectedUuids.add(g.uuid));
+                btn.innerText = 'DESELECCIONAR TODOS';
+            }
+            render(); // Re-render to reflect checkbox states
+        }
+
+        // ── DOWNLOAD LOGIC ──
+        // Handles both GCS (http) URLs and base64 data URLs
+        async function fetchAsBlob(url) {
+            if (url.startsWith('data:')) {
+                // It's already a base64 data URL — convert directly
+                const res = await fetch(url);
+                return await res.blob();
+            } else {
+                // It's an external URL (GCS). Try a no-cors fetch.
+                // If that fails due to CORS, use a backend proxy approach.
+                try {
+                    const res = await fetch(url, { mode: 'cors' });
+                    if (res.ok) return await res.blob();
+                } catch (e) { /* CORS blocked, fall through */ }
+
+                // Fallback: open in new tab if CORS blocks it
+                return null;
+            }
+        }
+
+        async function downloadSelected() {
+            const uuids = Array.from(selectedUuids);
+            if (uuids.length === 0) return;
+
+            const toast = document.getElementById('download-toast');
+            const toastText = document.getElementById('toast-text');
+            const btn = document.getElementById('btn-download');
+
+            // Show status
+            toast.classList.add('visible');
+            toastText.innerText = `Preparando ZIP con ${uuids.length} QR${uuids.length > 1 ? 's' : ''}...`;
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/guests/download-selected', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uuids })
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || 'Error en el servidor');
+                }
+
+                toastText.innerText = 'Generando archivo ZIP...';
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `qrs_mstch_${uuids.length}.zip`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                toastText.innerText = `✓ ZIP con ${uuids.length} QR${uuids.length > 1 ? 's' : ''} descargado correctamente`;
+                setTimeout(() => toast.classList.remove('visible'), 3500);
+
+            } catch (e) {
+                console.error(e);
+                toastText.innerText = `✗ Error: ${e.message}`;
+                setTimeout(() => toast.classList.remove('visible'), 4000);
+            } finally {
+                btn.disabled = selectedUuids.size === 0;
+            }
+        }
+
+        loadGuests();
+    </script>
+
+
+</body>
+</html>

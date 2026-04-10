@@ -3,53 +3,249 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shaq O'Neal Private Event | Access</title>
+    <title>MSTCH Digital | QR-Access</title>
     <link rel="stylesheet" href="/static/css/styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        .mstch-logo-complex { position: absolute; top: 21px; right: 18px; }
+        .main-grid {
+            display: grid;
+            grid-template-columns: 501px 501px;
+            gap: 20px;
+        }
+        .upload-section-wide { grid-column: span 2; width: 1022px; }
+        .header-section { display: flex; flex-direction: column; gap: 8px; }
+
+        /* ── UPLOAD MODAL ── */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.88);
+            backdrop-filter: blur(14px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 24px;
+        }
+        .modal-overlay.visible { display: flex; }
+        .modal-card {
+            background: rgba(22, 21, 21, 0.98);
+            border: 1px solid rgba(216, 88, 163, 0.3);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 480px;
+            padding: 44px 40px;
+            text-align: center;
+            box-shadow: 0 30px 60px -12px rgba(0,0,0,0.7);
+            animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.88) translateY(24px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-icon-wrap {
+            width: 72px; height: 72px; border-radius: 50%;
+            background: rgba(216, 88, 163, 0.12);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px;
+        }
+        .modal-icon-wrap .material-icons-round { font-size: 36px; color: var(--primary-color); }
+        .modal-icon-wrap.success { background: rgba(52, 199, 89, 0.12); }
+        .modal-icon-wrap.success .material-icons-round { color: #34c759; }
+        .modal-icon-wrap.fail { background: rgba(255, 59, 48, 0.12); }
+        .modal-icon-wrap.fail .material-icons-round { color: #ff3b30; }
+        .modal-title { font-size: 22px; font-weight: 700; color: #e5e2e1; margin-bottom: 8px; }
+        .modal-text  { color: #a8a29e; font-size: 14px; line-height: 1.6; margin-bottom: 28px; }
+
+        .progress-track {
+            background: rgba(255,255,255,0.07);
+            border-radius: 99px;
+            height: 6px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #d858a3, #f472c0);
+            border-radius: 99px;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+        .progress-fill.indeterminate {
+            width: 40%;
+            animation: slide 1.4s ease-in-out infinite;
+        }
+        @keyframes slide {
+            0%   { margin-left: -40%; }
+            100% { margin-left: 100%; }
+        }
+        .progress-label {
+            font-size: 11px; font-weight: 700;
+            letter-spacing: 1px; color: #78716c;
+            text-transform: uppercase;
+        }
+        .btn-modal-ok {
+            background: var(--primary-color);
+            border: none; color: white;
+            padding: 13px 36px; border-radius: 8px;
+            font-weight: 700; font-size: 11px; letter-spacing: 1px;
+            cursor: pointer; margin-top: 24px;
+            font-family: var(--font-main);
+            transition: opacity 0.2s;
+        }
+        .btn-modal-ok:hover { opacity: 0.85; }
+    </style>
 </head>
-<body>
-    <div class="container">
-        <h1>Shaq O'Neal Private Event</h1>
-        
-        <div id="menu-section" class="card">
-            <h2>Menú Principal</h2>
-            <div class="button-group">
-                <a href="/scanner" class="btn">Escáner QR</a>
-                <a href="/dashboard" class="btn">Dashboard</a>
+<body class="bg-black">
+
+    <div class="mstch-logo-complex">
+        <img src="https://mstch.com/wp-content/uploads/2022/10/logo_mstch_blanco_website.png" alt="MSTCH" style="height: 53px;">
+    </div>
+
+    <!-- UPLOAD PROGRESS MODAL -->
+    <div class="modal-overlay" id="upload-modal">
+        <div class="modal-card">
+            <div class="modal-icon-wrap" id="upload-modal-icon-wrap">
+                <span class="material-icons-round" id="upload-modal-icon">cloud_upload</span>
             </div>
-            <div class="card">
-                <h3>Cargar Invitados (CSV)</h3>
-                <input type="file" id="csv-file" accept=".csv, .xlsx">
-                <button id="upload-btn" class="btn">Subir</button>
-                <p id="upload-status"></p>
+            <div class="modal-title" id="upload-modal-title">Subiendo archivo...</div>
+            <div class="modal-text"  id="upload-modal-text">Generando códigos QR y asignando IDs únicos.</div>
+            <div class="progress-track">
+                <div class="progress-fill indeterminate" id="progress-fill"></div>
             </div>
+            <div class="progress-label" id="progress-label">PROCESANDO</div>
+            <button class="btn-modal-ok" id="upload-modal-ok" style="display:none;" onclick="closeUploadModal()">ACEPTAR</button>
         </div>
     </div>
 
-    <script>
-        const uploadBtn = document.getElementById('upload-btn');
+    <div class="main-wrapper animate-fade-in">
+        <header class="header-section">
+            <span class="system-tag">SISTEMA DE REGISTRO</span>
+            <h1 style="font-size: 36px;">Bienvenidos</h1>
+            <p class="header-desc">Real-time surveillance and entry authorization for the private registry.</p>
+        </header>
 
+        <main class="main-grid">
+            <a href="/scanner" class="glass-card" style="height: 214px;">
+                <div class="card-icon-box">
+                    <span class="material-icons-round">qr_code_scanner</span>
+                </div>
+                <h3>Escáner QR</h3>
+                <span class="card-tag">Acceso Rápido</span>
+            </a>
+
+            <a href="/dashboard" class="glass-card" style="height: 214px;">
+                <div class="card-icon-box">
+                    <span class="material-icons-round">dashboard</span>
+                </div>
+                <h3>Dashboard</h3>
+                <span class="card-tag">Analíticas</span>
+            </a>
+
+            <div class="glass-card glass-card-wide upload-section-wide" style="height: 300px;">
+                <div class="header-section" style="margin-bottom: 0;">
+                    <span class="system-tag">GESTIÓN DE DATOS</span>
+                    <h3>Cargar invitados (CSV)</h3>
+                </div>
+
+                <div class="upload-area" id="drop-zone" onclick="document.getElementById('csv-file').click()" style="margin-top: 24px;">
+                    <span class="material-icons-round upload-icon">cloud_upload</span>
+                    <span class="upload-text">SELECCIONAR ARCHIVO</span>
+                    <span class="upload-sub">Solo archivos .CSV (Formato Ledger compatible)</span>
+                    <input type="file" id="csv-file" accept=".csv" style="display: none;">
+                </div>
+
+                <p id="file-name" style="margin-top: 8px; font-size: 12px; color: var(--primary-color); display: none;"></p>
+                <button id="upload-btn" class="btn-upload" style="align-self: flex-end; margin-top: auto;">Subir</button>
+            </div>
+        </main>
+    </div>
+
+    <nav class="nav-bar">
+        <a href="/" class="nav-item active"><span class="material-icons-round">home</span>HOME</a>
+        <a href="/scanner" class="nav-item"><span class="material-icons-round">qr_code_scanner</span>ESCANEAR</a>
+        <a href="/dashboard" class="nav-item"><span class="material-icons-round">dashboard</span>DASHBOARD</a>
+        <a href="/invitados" class="nav-item"><span class="material-icons-round">people</span>INVITADOS</a>
+        <a href="/capturas" class="nav-item"><span class="material-icons-round">photo_camera</span>INGRESOS</a>
+    </nav>
+
+    <script>
+        const fileInput       = document.getElementById('csv-file');
+        const fileNameDisplay = document.getElementById('file-name');
+        const uploadBtn       = document.getElementById('upload-btn');
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                fileNameDisplay.textContent = '📎 ' + fileInput.files[0].name;
+                fileNameDisplay.style.display = 'block';
+            }
+        });
+
+        // ── MODAL STATES ──
+        function showUploadModal() {
+            document.getElementById('upload-modal-icon-wrap').className = 'modal-icon-wrap';
+            document.getElementById('upload-modal-icon').innerText = 'cloud_upload';
+            document.getElementById('upload-modal-title').innerText = 'Subiendo archivo...';
+            document.getElementById('upload-modal-text').innerText = 'Generando códigos QR y asignando IDs únicos. Esto puede tardar unos segundos dependiendo del número de invitados.';
+            document.getElementById('progress-fill').className = 'progress-fill indeterminate';
+            document.getElementById('progress-label').innerText = 'PROCESANDO';
+            document.getElementById('upload-modal-ok').style.display = 'none';
+            document.getElementById('upload-modal').classList.add('visible');
+        }
+
+        function showUploadSuccess(count) {
+            document.getElementById('upload-modal-icon-wrap').className = 'modal-icon-wrap success';
+            document.getElementById('upload-modal-icon').innerText = 'check_circle';
+            document.getElementById('upload-modal-title').innerText = '¡Carga exitosa!';
+            document.getElementById('upload-modal-text').innerText = `Se procesaron ${count} invitados. Cada uno tiene su ID único de 6 dígitos, ID consecutivo y código QR generado.`;
+            document.getElementById('progress-fill').className = 'progress-fill';
+            document.getElementById('progress-fill').style.width = '100%';
+            document.getElementById('progress-label').innerText = 'COMPLETADO';
+            document.getElementById('upload-modal-ok').style.display = 'inline-block';
+        }
+
+        function showUploadError(msg) {
+            document.getElementById('upload-modal-icon-wrap').className = 'modal-icon-wrap fail';
+            document.getElementById('upload-modal-icon').innerText = 'error_outline';
+            document.getElementById('upload-modal-title').innerText = 'Error al cargar';
+            document.getElementById('upload-modal-text').innerText = msg || 'Ocurrió un error inesperado. Verifica que el archivo tenga la columna "name".';
+            document.getElementById('progress-fill').className = 'progress-fill';
+            document.getElementById('progress-fill').style.width = '0';
+            document.getElementById('progress-label').innerText = 'FALLIDO';
+            document.getElementById('upload-modal-ok').style.display = 'inline-block';
+        }
+
+        function closeUploadModal() {
+            document.getElementById('upload-modal').classList.remove('visible');
+        }
+
+        // ── UPLOAD ──
         uploadBtn.addEventListener('click', async () => {
-             const fileInput = document.getElementById('csv-file');
-             if(fileInput.files.length === 0) return;
-             
-             const formData = new FormData();
-             formData.append('file', fileInput.files[0]);
-             
-             try {
+            if (fileInput.files.length === 0) return;
+
+            showUploadModal();
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
                 const response = await fetch('/api/guests/upload', {
                     method: 'POST',
                     body: formData
                 });
-                if(response.ok) {
-                    document.getElementById('upload-status').innerText = "Carga exitosa! Redirigiendo...";
-                    setTimeout(() => window.location.href = '/dashboard', 1500);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showUploadSuccess(Array.isArray(data) ? data.length : '?');
                 } else {
-                    document.getElementById('upload-status').innerText = "Error en la carga.";
+                    const err = await response.json().catch(() => ({}));
+                    showUploadError(err.detail || 'Error del servidor.');
                 }
-             } catch (e) {
-                 document.getElementById('upload-status').innerText = "Error.";
-             }
+            } catch (e) {
+                showUploadError(e.message);
+            }
         });
     </script>
 </body>

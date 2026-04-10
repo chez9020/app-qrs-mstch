@@ -10,6 +10,7 @@ class GuestStatus(str, Enum):
 
 class Guest(BaseModel):
     id: Optional[str] = None
+    id_consecutivo: Optional[str] = None
     name: str
     email: Optional[str] = None 
     uuid: str

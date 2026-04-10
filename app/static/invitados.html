@@ -3,296 +3,572 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Invitados | Shaq Event</title>
+    <title>Gestión de Invitados | MSTCH Digital</title>
     <link rel="stylesheet" href="/static/css/styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <style>
-        .container { max-width: 900px; }
-        .table-container { overflow-x: auto; max-height: 60vh; overflow-y: auto; }
-        .qr-thumb { width: 50px; height: 50px; object-fit: contain; background: white; padding: 2px; }
-        .success-msg { color: var(--success-color); margin-top: 10px; font-weight: bold; }
-        .error-msg { color: var(--error-color); margin-top: 10px; font-weight: bold; }
-        .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+        .mstch-logo-complex {
+            position: fixed;
+            top: 21px;
+            right: 18px;
+            z-index: 100;
+        }
+        .main-wrapper {
+            max-width: 1184px;
+            margin: 0 auto;
+            padding: 55px 48px 120px 48px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* ── HEADER ── */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .header-text .system-tag {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--primary-color);
+            display: block;
+            margin-bottom: 8px;
+        }
+        .header-text h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin: 0 0 8px;
+            line-height: 1;
+        }
+        .header-text p { color: #bfbfbf; font-size: 14px; margin: 0; }
+
+        .btn-download-qrs {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--primary-color);
+            color: white;
+            font-family: var(--font-main);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+        }
+        .btn-download-qrs:hover { opacity: 0.85; }
+
+        /* ── TOOLBAR ── */
+        .toolbar-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+        .search-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(28, 27, 27, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 12px 20px;
+            width: 360px;
+            backdrop-filter: blur(10px);
+        }
+        .search-wrapper .material-icons-round { color: var(--primary-color); font-size: 20px; }
+        .search-wrapper input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            font-size: 14px;
+            font-family: var(--font-main);
+            width: 100%;
+        }
+        .search-wrapper input::placeholder { color: #78716c; }
+
+        .toolbar-actions { display: flex; gap: 12px; }
+
+        .btn-action {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: white;
+            font-family: var(--font-main);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-action:hover { border-color: rgba(255,255,255,0.35); }
+        .btn-action.danger { border-color: rgba(255, 59, 48, 0.4); color: #ff6b60; }
+        .btn-action.danger:hover { border-color: rgba(255, 59, 48, 0.8); background: rgba(255, 59, 48, 0.07); }
+
+        /* ── TABLE ── */
+        .table-card {
+            background: rgba(28, 27, 27, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        .mstch-table { width: 100%; border-collapse: collapse; }
+        .mstch-table thead tr { background: rgba(28, 27, 27, 0.5); }
+        .mstch-table th {
+            padding: 18px 24px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: white;
+        }
+        .mstch-table tbody tr {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            transition: background 0.15s;
+        }
+        .mstch-table tbody tr:hover { background: rgba(255, 255, 255, 0.03); }
+        .mstch-table td { padding: 18px 24px; font-size: 14px; color: #d3c4af; }
+
+        .td-id { font-size: 13px; color: #78716c; font-weight: 600; }
+        .td-name { font-weight: 700; color: #e5e2e1; font-size: 15px; }
+        .td-email { color: #a8a29e; }
+        .td-uuid { font-family: monospace; font-size: 11px; color: #d858a3; opacity: 0.8; }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 99px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+        .badge-checked-in {
+            background: rgba(216, 88, 163, 0.15);
+            color: var(--primary-color);
+            border: 1px solid rgba(216, 88, 163, 0.3);
+        }
+        .badge-valid {
+            background: rgba(255, 255, 255, 0.06);
+            color: #a8a29e;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* ── TABLE FOOTER / PAGINATION ── */
+        .table-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(28, 27, 27, 0.3);
+        }
+        .showing-text {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #78716c;
+        }
+        .pagination-btns { display: flex; align-items: center; gap: 6px; }
+        .pg-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #a8a29e;
+            background: transparent;
+            transition: all 0.15s;
+        }
+        .pg-btn:hover:not(:disabled) { border-color: rgba(255,255,255,0.3); color: white; }
+        .pg-btn.active { background: var(--primary-color); border-color: var(--primary-color); color: white; }
+        .pg-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        /* ── DANGER ZONE ── */
+        .danger-zone {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* ── MODAL ── */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 24px;
+        }
+        .modal-overlay.visible { display: flex; }
+        .modal-card {
+            background: rgba(22, 21, 21, 0.98);
+            border: 1px solid rgba(216, 88, 163, 0.3);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 460px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.6);
+            animation: modalIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.88) translateY(24px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-icon-wrap {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: rgba(216, 88, 163, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+        .modal-icon-wrap .material-icons-round { font-size: 36px; color: var(--primary-color); }
+        .modal-icon-wrap.success { background: rgba(52, 199, 89, 0.12); }
+        .modal-icon-wrap.success .material-icons-round { color: #34c759; }
+        .modal-icon-wrap.error { background: rgba(255, 59, 48, 0.12); }
+        .modal-icon-wrap.error .material-icons-round { color: #ff3b30; }
+        .modal-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #e5e2e1;
+            margin-bottom: 10px;
+        }
+        .modal-text {
+            color: #a8a29e;
+            font-size: 14px;
+            line-height: 1.65;
+            margin-bottom: 32px;
+        }
+        .modal-actions { display: flex; gap: 12px; justify-content: center; }
+        .btn-modal-cancel {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #d3c4af;
+            padding: 13px 28px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: var(--font-main);
+        }
+        .btn-modal-cancel:hover { border-color: rgba(255,255,255,0.35); color: white; }
+        .btn-modal-confirm {
+            background: var(--primary-color);
+            border: none;
+            color: white;
+            padding: 13px 28px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            font-family: var(--font-main);
+        }
+        .btn-modal-confirm:hover { opacity: 0.85; }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>GESTIÓN DE INVITADOS</h1>
+<body class="bg-black">
 
-        <div class="tabs">
-            <div class="tab active" onclick="switchTab('guests')">Lista de Invitados</div>
-            <div class="tab" onclick="switchTab('qrs')">Descarga de QRs</div>
-        </div>
+    <!-- LOGO -->
+    <div class="mstch-logo-complex">
+        <img src="https://mstch.com/wp-content/uploads/2022/10/logo_mstch_blanco_website.png" alt="MSTCH" style="height: 53px;">
+    </div>
 
-        <!-- TAB 1: LISTA TOTAL & EXPORT -->
-        <div id="tab-guests" class="tab-content active">
-            <div class="card">
-                <div class="toolbar">
-                    <input type="text" id="search-guest" class="search-bar" placeholder="Buscar por nombre..." onkeyup="filterTable('guest-table', 'search-guest', 1)">
-                    <button class="btn" onclick="exportTableToCSV('guest-table', 'invitados_shaq.csv')" style="width: auto; margin:0;">Exportar CSV 📥</button>
-                    <button class="btn" onclick="loadGuests()" style="width: auto; margin:0; background: #333; border: 1px solid white;">🔄 Recargar</button>
-                </div>
-                
-                <div class="table-container">
-                    <table id="guest-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nombre</th>
-                                <th>Email</th>
-                                <th>Status</th>
-                                <th>Checked In</th>
-                            </tr>
-                        </thead>
-                        <tbody id="guest-tbody">
-                            <!-- JS load -->
-                        </tbody>
-                    </table>
-                </div>
+    <!-- MODAL -->
+    <div class="modal-overlay" id="custom-modal">
+        <div class="modal-card">
+            <div class="modal-icon-wrap" id="modal-icon-wrap">
+                <span class="material-icons-round" id="modal-icon">warning</span>
             </div>
-        </div>
-
-        <!-- TAB 2: GALERÍA Y DESCARGA DE QRS -->
-        <div id="tab-qrs" class="tab-content">
-            <div class="card">
-                <div class="toolbar">
-                    <input type="text" id="search-qr" class="search-bar" placeholder="Buscar QR por nombre..." onkeyup="filterTable('qr-table', 'search-qr', 2)">
-                    <button class="btn" onclick="downloadSelectedQRs()" style="width: auto; margin:0;">Descargar Seleccionados (ZIP)</button>
-                    <button class="btn" onclick="toggleSelectAll(this)" style="width: auto; margin:0; background: #333; border: 1px solid white;">Seleccionar Todos</button>
-                </div>
-
-                <div class="table-container">
-                    <table id="qr-table">
-                        <thead>
-                            <tr>
-                                <th>🆗</th>
-                                <th>ID</th>
-                                <th>Nombre</th>
-                                <th>QR Vista Previa</th>
-                                <th>Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody id="qr-tbody">
-                            <!-- JS load -->
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div id="download-status"></div>
+            <div class="modal-title" id="modal-title">¿Estás seguro?</div>
+            <div class="modal-text" id="modal-text">Esta acción es permanente.</div>
+            <div class="modal-actions">
+                <button class="btn-modal-cancel" id="btn-modal-cancel" onclick="closeModal()">CANCELAR</button>
+                <button class="btn-modal-confirm" id="btn-modal-confirm">CONFIRMAR</button>
             </div>
-        </div>
-
-        <div class="nav-bar">
-            <a href="/" class="nav-item">🏠</a>
-            <a href="/scanner" class="nav-item">📷</a>
-            <a href="/dashboard" class="nav-item">📊</a>
         </div>
     </div>
 
+    <div class="main-wrapper animate-fade-in">
+
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+            <div class="header-text">
+                <span class="system-tag">SISTEMA DE REGISTRO</span>
+                <h1>Gestión de invitados</h1>
+                <p>Manage access and entry status in real-time.</p>
+            </div>
+            <button class="btn-download-qrs" onclick="window.location.href='/descarga-qrs'">
+                <span class="material-icons-round" style="font-size: 18px;">download</span>
+                DESCARGA DE QRS
+            </button>
+        </div>
+
+        <!-- TOOLBAR -->
+        <div class="toolbar-row">
+            <div class="search-wrapper">
+                <span class="material-icons-round">search</span>
+                <input type="text" id="search-input" placeholder="Buscar por nombre" oninput="applyFilter()">
+            </div>
+            <div class="toolbar-actions">
+                <button class="btn-action" onclick="loadGuests()">
+                    <span class="material-icons-round" style="font-size: 16px;">refresh</span>
+                    RECARGAR
+                </button>
+                <button class="btn-action" onclick="exportTableToCSV()">
+                    <span class="material-icons-round" style="font-size: 16px;">download</span>
+                    EXPORTAR CSV
+                </button>
+            </div>
+        </div>
+
+        <!-- DANGER ZONE -->
+        <div class="danger-zone">
+            <button class="btn-action danger" onclick="resetDatabase()">
+                <span class="material-icons-round" style="font-size: 16px;">delete_sweep</span>
+                BORRAR FIRESTORE
+            </button>
+            <button class="btn-action danger" onclick="resetBucket()">
+                <span class="material-icons-round" style="font-size: 16px;">cloud_off</span>
+                BORRAR BUCKET QRS
+            </button>
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-card">
+            <table class="mstch-table" id="guest-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Unique ID</th>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>UUID (Firma QR)</th>
+                        <th>Status</th>
+                        <th>Checked In</th>
+                    </tr>
+                </thead>
+                <tbody id="guest-tbody">
+                    <tr><td colspan="7" style="text-align:center; padding:40px; color:#78716c;">Cargando invitados...</td></tr>
+                </tbody>
+            </table>
+            <div class="table-footer">
+                <span class="showing-text" id="showing-text">MOSTRANDO 0 REGISTROS</span>
+                <div class="pagination-btns" id="pagination"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- NAV -->
+    <nav class="nav-bar">
+        <a href="/" class="nav-item"><span class="material-icons-round">home</span>HOME</a>
+        <a href="/scanner" class="nav-item"><span class="material-icons-round">qr_code_scanner</span>ESCANEAR</a>
+        <a href="/dashboard" class="nav-item"><span class="material-icons-round">dashboard</span>DASHBOARD</a>
+        <a href="/invitados" class="nav-item active"><span class="material-icons-round">people</span>INVITADOS</a>
+        <a href="/capturas" class="nav-item"><span class="material-icons-round">photo_camera</span>INGRESOS</a>
+    </nav>
+
     <script>
         let allGuests = [];
+        let filteredGuests = [];
+        let currentPage = 1;
+        const pageSize = 25;
 
-        // Tab Switching
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
-            // Find tab by text content is tricky, better by index or specific class. 
-            // Simplified:
-            if(tabName === 'guests') {
-                document.querySelectorAll('.tab')[0].classList.add('active');
-                document.getElementById('tab-guests').classList.add('active');
-            } else {
-                document.querySelectorAll('.tab')[1].classList.add('active');
-                document.getElementById('tab-qrs').classList.add('active');
-            }
+        // ── MODAL SYSTEM ──
+        function openModal({ icon, iconType = '', title, text, showCancel = true, confirmText = 'CONFIRMAR', onConfirm }) {
+            const wrap = document.getElementById('modal-icon-wrap');
+            wrap.className = 'modal-icon-wrap' + (iconType ? ' ' + iconType : '');
+            document.getElementById('modal-icon').innerText = icon;
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-text').innerText = text;
+            document.getElementById('btn-modal-cancel').style.display = showCancel ? '' : 'none';
+
+            const oldBtn = document.getElementById('btn-modal-confirm');
+            const newBtn = oldBtn.cloneNode(true);
+            newBtn.innerText = confirmText;
+            oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+            newBtn.onclick = () => { closeModal(); if (onConfirm) onConfirm(); };
+
+            document.getElementById('custom-modal').classList.add('visible');
         }
 
-        // LOAD DATA
-        async function loadGuests() {
-            const tbody = document.getElementById('guest-tbody');
-            const qrBody = document.getElementById('qr-tbody');
-            tbody.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
-            qrBody.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
+        function closeModal() {
+            document.getElementById('custom-modal').classList.remove('visible');
+        }
 
+        // ── LOAD DATA ──
+        async function loadGuests() {
+            document.getElementById('guest-tbody').innerHTML =
+                '<tr><td colspan="7" style="text-align:center; padding:40px; color:#78716c;">Cargando...</td></tr>';
             try {
                 const res = await fetch('/api/guests/all');
-                if (!res.ok) throw new Error('Error al cargar datos');
                 allGuests = await res.json();
-
-                // Sort by ID numeric if possible
-                allGuests.sort((a,b) => parseInt(a.id) - parseInt(b.id));
-
-                renderGuestsParams(allGuests);
-
+                allGuests.sort((a, b) => parseInt(a.id_consecutivo || 0) - parseInt(b.id_consecutivo || 0));
+                filteredGuests = [...allGuests];
+                currentPage = 1;
+                render();
             } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="5" class="error-msg">${e.message}</td></tr>`;
+                document.getElementById('guest-tbody').innerHTML =
+                    `<tr><td colspan="7" style="text-align:center; padding:40px; color:#ff6b60;">Error al cargar datos: ${e.message}</td></tr>`;
             }
         }
 
-        function renderGuestsParams(data) {
+        function applyFilter() {
+            const q = document.getElementById('search-input').value.toLowerCase();
+            filteredGuests = allGuests.filter(g => g.name.toLowerCase().includes(q));
+            currentPage = 1;
+            render();
+        }
+
+        function render() {
             const tbody = document.getElementById('guest-tbody');
-            const qrBody = document.getElementById('qr-tbody');
-            tbody.innerHTML = '';
-            qrBody.innerHTML = '';
+            const start = (currentPage - 1) * pageSize;
+            const page = filteredGuests.slice(start, start + pageSize);
 
-            data.forEach(g => {
-                // Tabla Invitados
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${g.id}</td>
-                    <td>${g.name}</td>
-                    <td>${g.email || '-'}</td>
-                    <td>${g.status}</td>
-                    <td>${g.scan_timestamp ? new Date(g.scan_timestamp).toLocaleString() : '-'}</td>
-                `;
-                tbody.appendChild(row);
+            if (page.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:40px; color:#78716c;">Sin resultados.</td></tr>';
+            } else {
+                tbody.innerHTML = page.map(g => `
+                    <tr>
+                        <td class="td-id">${g.id_consecutivo || '-'}</td>
+                        <td class="td-id" style="color: #d858a3;">${g.id}</td>
+                        <td class="td-name">${g.name}</td>
+                        <td class="td-email">${g.email || '-'}</td>
+                        <td class="td-uuid">${g.uuid}</td>
+                        <td>
+                            <span class="badge ${g.status === 'checked_in' ? 'badge-checked-in' : 'badge-valid'}">
+                                ${g.status === 'checked_in' ? 'CHECKED IN' : 'VALID'}
+                            </span>
+                        </td>
+                        <td style="color:#78716c; font-size:13px;">${g.scan_timestamp ? formatDate(g.scan_timestamp) : '-'}</td>
+                    </tr>
+                `).join('');
+            }
 
-                // Tabla QRs
-                const qrRow = document.createElement('tr');
-                // Extract filename from URL is hard without backend logic, but we can assume logic or just use URL
-                // We'll store the qr_code_url in checkbox value for now? 
-                // Or better, we need the filename for the backend ZIP. 
-                // Currently backend receives list of filenames.
-                // Let's use the object structure: current_id + "_" + safe_name + ".png"
-                // But reproducing "safe_name" in JS exactly as python is risky.
-                // Workaround: We will send list of Image URLs and let backend handle it? Or modify backend to accept URLs?
-                // BETTER: The backend 'download-qrs' downloads ALL. 
-                // FOR SELECTED: Client-side ZIP using JSZip is heavy but safer? 
-                // Or implementing a 'download-selection' in backend that accepts a list of filenames.
-                // Let's try to assume filenames are safe enough or simply use the existing big download if user wants.
-                // The user asked for "download selected".
-                // I'll assume for now we can select and download INDIVIDUAL via link, and if they want ZIP, we download ALL with the existing button or we implement specific backend logic.
-                // Re-reading user request: "pueda elegir cuales descargar".
-                
-                qrRow.innerHTML = `
-                    <td><input type="checkbox" class="qr-check" value="${g.qr_code_url}" data-name="${g.name}"></td>
-                    <td>${g.id}</td>
-                    <td>${g.name}</td>
-                    <td><a href="${g.qr_code_url}" target="_blank"><img src="${g.qr_code_url}" class="qr-thumb" loading="lazy"></a></td>
-                    <td>
-                        <button class="action-btn" onclick="downloadOne('${g.qr_code_url}', '${g.name}.png')">⬇</button>
-                    </td>
-                `;
-                qrBody.appendChild(qrRow);
+            // Pagination
+            const totalPages = Math.ceil(filteredGuests.length / pageSize);
+            let html = `<button class="pg-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹</button>`;
+            for (let i = 1; i <= totalPages; i++) {
+                if (i <= 2 || i === totalPages || Math.abs(i - currentPage) <= 1) {
+                    html += `<button class="pg-btn ${i === currentPage ? 'active' : ''}" onclick="goPage(${i})">${i}</button>`;
+                } else if (Math.abs(i - currentPage) === 2) {
+                    html += `<span style="color:#78716c; padding:0 4px;">...</span>`;
+                }
+            }
+            html += `<button class="pg-btn" onclick="goPage(${currentPage + 1})" ${currentPage >= totalPages || totalPages === 0 ? 'disabled' : ''}>›</button>`;
+            document.getElementById('pagination').innerHTML = html;
+
+            const end = Math.min(start + pageSize, filteredGuests.length);
+            document.getElementById('showing-text').innerText =
+                `MOSTRANDO ${filteredGuests.length > 0 ? start + 1 : 0}-${end} DE ${filteredGuests.length.toLocaleString()} ENTRADAS VERIFICADAS`;
+        }
+
+        function goPage(page) {
+            const totalPages = Math.ceil(filteredGuests.length / pageSize);
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            render();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function formatDate(ts) {
+            try {
+                const d = new Date(ts);
+                return d.toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' })
+                    + ' · ' + d.toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+            } catch { return ts; }
+        }
+
+        // ── EXPORT CSV ──
+        function exportTableToCSV() {
+            const headers = ['ID', 'Unique ID', 'Nombre', 'Correo', 'UUID', 'Status', 'Checked In'];
+            const rows = filteredGuests.map(g => [
+                g.id_consecutivo || '',
+                g.id,
+                `"${g.name}"`,
+                g.email || '',
+                g.uuid,
+                g.status,
+                g.scan_timestamp ? formatDate(g.scan_timestamp) : ''
+            ]);
+            const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'invitados_mstch.csv';
+            link.click();
+        }
+
+        // ── DANGER ACTIONS ──
+        async function resetDatabase() {
+            openModal({
+                icon: 'delete_sweep',
+                title: 'Borrar Firestore',
+                text: 'Esto borrará TODOS los invitados de Firestore de forma permanente. Esta acción no se puede deshacer.',
+                confirmText: 'SÍ, BORRAR',
+                onConfirm: async () => {
+                    try {
+                        const res = await fetch('/api/guests/delete-all', { method: 'DELETE' });
+                        const data = await res.json();
+                        openModal({ icon: 'check_circle', iconType: 'success', title: 'Completado', text: data.message, showCancel: false, confirmText: 'ACEPTAR' });
+                        loadGuests();
+                    } catch (e) {
+                        openModal({ icon: 'error', iconType: 'error', title: 'Error', text: e.message, showCancel: false, confirmText: 'CERRAR' });
+                    }
+                }
             });
         }
 
-        // CSV Export
-        function exportTableToCSV(tableId, filename) {
-            const csv = [];
-            const rows = document.querySelectorAll(`#${tableId} tr`);
-            
-            for (let i = 0; i < rows.length; i++) {
-                const row = [], cols = rows[i].querySelectorAll("td, th");
-                for (let j = 0; j < cols.length; j++) 
-                    row.push('"' + cols[j].innerText + '"'); // Quote strings
-                csv.push(row.join(","));
-            }
-
-            downloadCSV(csv.join("\n"), filename);
-        }
-
-        function downloadCSV(csv, filename) {
-            const csvFile = new Blob([csv], {type: "text/csv"});
-            const downloadLink = document.createElement("a");
-            downloadLink.download = filename;
-            downloadLink.href = window.URL.createObjectURL(csvFile);
-            downloadLink.style.display = "none";
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-        }
-
-        // Filter Function
-        function filterTable(tableId, inputId, colIndex) {
-            const input = document.getElementById(inputId);
-            const filter = input.value.toUpperCase();
-            const table = document.getElementById(tableId);
-            const tr = table.getElementsByTagName("tr");
-
-            for (let i = 1; i < tr.length; i++) {
-                const td = tr[i].getElementsByTagName("td")[colIndex];
-                if (td) {
-                    const txtValue = td.textContent || td.innerText;
-                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                        tr[i].style.display = "";
-                    } else {
-                        tr[i].style.display = "none";
+        async function resetBucket() {
+            openModal({
+                icon: 'cloud_off',
+                title: 'Borrar Bucket QRS',
+                text: 'Esto borrará TODAS las imágenes QR del almacenamiento de Google Cloud. Esta acción no se puede deshacer.',
+                confirmText: 'SÍ, BORRAR',
+                onConfirm: async () => {
+                    try {
+                        const res = await fetch('/api/guests/delete-qrs-bucket', { method: 'DELETE' });
+                        const data = await res.json();
+                        openModal({ icon: 'check_circle', iconType: 'success', title: 'Completado', text: data.message, showCancel: false, confirmText: 'ACEPTAR' });
+                    } catch (e) {
+                        openModal({ icon: 'error', iconType: 'error', title: 'Error', text: e.message, showCancel: false, confirmText: 'CERRAR' });
                     }
                 }
-            }
+            });
         }
 
-        // Single Download
-        function downloadOne(url, name) {
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = name;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        // Select All
-        function toggleSelectAll(btn) {
-            const checks = document.querySelectorAll('.qr-check');
-            const allSelected = Array.from(checks).every(c => c.checked);
-            checks.forEach(c => c.checked = !allSelected);
-            btn.innerText = allSelected ? "Seleccionar Todos" : "Deseleccionar Todos";
-        }
-
-        // Download Selected ZIP (Client Side for simplicity and precision with URLs)
-        // Since we have the URLs, we can fetch them and zip them in browser or send URLs to backend.
-        // Given dependencies complexity, simplest "Dignified" way if backend 'download-all' exists:
-        // Use backend /download-qrs for ALL. 
-        // For partial, warn user or just download one by one?
-        // Let's implement a simple Client Side ZIP using a Script if possible, or just allow multi-tab open?
-        // Actually, user asked "elegir cuales descargar". 
-        // I will implement a JS loop that downloads them individually with a small delay to avoid blocking. 
-        // It's the most robust without changing backend logic for "Partial ZIP generation from URLs".
-        
-        async function downloadSelectedQRs() {
-            const checked = document.querySelectorAll('.qr-check:checked');
-            if (checked.length === 0) {
-                alert("Selecciona al menos uno");
-                return;
-            }
-
-            if (checked.length > 5) {
-                if(!confirm(`Vas a descargar ${checked.length} imágenes. Se abrirán múltiples descargas. ¿Seguir? (Para muchos, mejor usa el botón de Descargar Todo del backend)`)) return;
-            }
-
-            const status = document.getElementById('download-status');
-            status.innerText = "Iniciando descarga...";
-            
-            let count = 0;
-            for (const chk of checked) {
-                const url = chk.value;
-                const name = chk.dataset.name + ".png";
-                
-                // Force download
-                try {
-                    const response = await fetch(url);
-                    const blob = await response.blob();
-                    const link = document.createElement("a");
-                    link.href = window.URL.createObjectURL(blob);
-                    link.download = name;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                } catch(e) {
-                    console.error("Error downloading", name, e);
-                }
-                
-                count++;
-                status.innerText = `Descargado ${count} de ${checked.length}`;
-                await new Promise(r => setTimeout(r, 500)); // 500ms delay to be nice
-            }
-            status.innerText = "¡Descargas finalizadas!";
-            setTimeout(() => status.innerText = "", 3000);
-        }
-
-        // Init
         loadGuests();
     </script>
 </body>

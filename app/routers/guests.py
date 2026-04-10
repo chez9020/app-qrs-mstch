@@ -3,6 +3,7 @@ from typing import List
 import pandas as pd
 import uuid
 import io
+from pydantic import BaseModel
 from app.models.schemas import Guest, GuestStatus
 from app.services.db import get_db
 from app.services.qr import generate_qr
@@ -22,6 +23,7 @@ async def upload_guests(file: UploadFile = File(...)):
     import os
     import base64
     import traceback
+    import random
 
     try:
         if not file.filename.endswith(('.csv', '.xlsx')):
@@ -36,41 +38,48 @@ async def upload_guests(file: UploadFile = File(...)):
         else:
             df = pd.read_excel(io.BytesIO(contents))
 
-        # Clean the columns to be lowercase and strip spaces
+        # Clean columns
         df.columns = df.columns.astype(str).str.lower().str.strip()
-        
-        # We require at least "name"
         if "name" not in df.columns:
-            raise HTTPException(status_code=400, detail=f"Missing required column: name")
+            raise HTTPException(status_code=400, detail="Missing required column: name")
 
-        # Ensure qrs directory exists
         os.makedirs("qrs", exist_ok=True)
-        
         db = get_db()
         
-        # Get current count of guests from DB
-        guests_ref = db.collection(collection_name)
-        # Using aggregation query for count is more efficient but requires newer SDK/backend
-        # For simplicity and broad compatibility:
-        existing_docs = guests_ref.stream()
-        existing_qrs = sum(1 for _ in existing_docs)
-        start_index = existing_qrs + 1
+        # 1. Get existing data to ensure unique random IDs and compute consecutive offset
+        existing_ids = set()
+        existing_count = 0
+        docs = db.collection(collection_name).stream()
+        for doc in docs:
+            d = doc.to_dict()
+            if "id" in d:
+                existing_ids.add(str(d["id"]))
+            existing_count += 1
 
         guests_added = []
-        # db = get_db() # Moved up
         batch = db.batch()
 
         for idx, row in df.iterrows():
             guest_uuid = str(uuid.uuid4())
+            
+            # 2. Consecutive ID (continues from existing count)
+            id_consecutivo = str(existing_count + idx + 1)
+            
+            # 3. Random unique 6-digit ID
+            while True:
+                new_id = str(random.randint(100000, 999999))
+                if new_id not in existing_ids:
+                    existing_ids.add(new_id)
+                    current_id = new_id
+                    break
+
             qr_code_base64 = generate_qr(guest_uuid)
             
-            # Save QR to file
-            current_id = start_index + idx
+            # Filename uses consecutive ID + name for easy sorting
             safe_name = "".join(x for x in str(row["name"]) if x.isalnum() or x in " _-").strip()
-            filename = f"{current_id}_{safe_name}.png"
+            filename = f"{id_consecutivo}_{safe_name}.png"
             file_path = os.path.join("qrs", filename)
             
-            # Remove header "data:image/png;base64,"
             if "," in qr_code_base64:
                 img_data = base64.b64decode(qr_code_base64.split(",")[1])
             else:
@@ -79,24 +88,23 @@ async def upload_guests(file: UploadFile = File(...)):
             with open(file_path, "wb") as f:
                 f.write(img_data)
 
-            # Upload to Google Cloud Storage
+            # Upload to GCS
             gcs_url = None
-            gcs_filename = f"qrs/{filename}"
             try:
-                gcs_url = upload_bytes_to_gcs(img_data, gcs_filename)
+                gcs_url = upload_bytes_to_gcs(img_data, f"qrs/{filename}")
+                # Si se subió con éxito a la nube, borramos el local para no saturar el servidor
+                if gcs_url and os.path.exists(file_path):
+                    os.remove(file_path)
             except Exception as e:
-                print(f"GCS Upload failed: {e}")
-                # Fallback: keep using base64 if upload fails
+                print(f"Error uploading to GCS: {e}")
                 gcs_url = None
 
-            # Safely get email or set to None
             guest_email = row["email"] if "email" in df.columns and pd.notna(row["email"]) else None
-            
-            # Use GCS URL if available, else Base64
             final_qr_url = gcs_url if gcs_url else qr_code_base64
 
             guest_data = {
-                "id": str(current_id),
+                "id": current_id,
+                "id_consecutivo": id_consecutivo,
                 "name": row["name"],
                 "email": guest_email,
                 "uuid": guest_uuid,
@@ -107,18 +115,16 @@ async def upload_guests(file: UploadFile = File(...)):
             
             doc_ref = db.collection(collection_name).document(guest_uuid)
             batch.set(doc_ref, guest_data)
-            
-            # We return the object with current time for response model
-            guest_resp = guest_data.copy()
-            guests_added.append(guest_resp)
+            guests_added.append(guest_data)
 
         batch.commit()
         return guests_added
 
+
     except Exception as e:
-        print("ERROR IN UPLOAD_GUESTS:")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.get("/", response_model=List[Guest])
 async def get_guests():
@@ -190,6 +196,114 @@ async def download_all_qrs(background_tasks: BackgroundTasks):
         print(f"Error generating zip: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+class DownloadSelectionRequest(BaseModel):
+    uuids: List[str]
+
+@router.post("/download-selected", response_class=StreamingResponse)
+async def download_selected_qrs(body: DownloadSelectionRequest):
+    """Recibe una lista de UUIDs y retorna un ZIP con sus QRs."""
+    import base64
+
+    if not body.uuids:
+        raise HTTPException(status_code=400, detail="No se proporcionaron UUIDs.")
+
+    try:
+        db = get_db()
+        zip_buffer = io.BytesIO()
+
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            for guest_uuid in body.uuids:
+                doc = db.collection(collection_name).document(guest_uuid).get()
+                if not doc.exists:
+                    continue
+
+                guest = doc.to_dict()
+                name = "".join(x for x in str(guest.get("name", "guest")) if x.isalnum() or x in " _-").strip()
+                guest_id = guest.get("id", guest_uuid[:6])
+                filename = f"{guest_id}_{name}.png"
+                qr_url = guest.get("qr_code_url", "")
+
+                img_data = None
+
+                if qr_url.startswith("data:"):
+                    # Base64 embedded image
+                    try:
+                        header, encoded = qr_url.split(",", 1)
+                        img_data = base64.b64decode(encoded)
+                    except Exception as e:
+                        print(f"Error decoding base64 for {guest_uuid}: {e}")
+                elif qr_url.startswith("http"):
+                    # GCS URL — download server-side (no CORS issue)
+                    try:
+                        from app.services.cloud_storage import list_files
+                        import urllib.request
+                        with urllib.request.urlopen(qr_url, timeout=10) as response:
+                            img_data = response.read()
+                    except Exception as e:
+                        print(f"Error downloading GCS QR for {guest_uuid}: {e}")
+
+                if img_data:
+                    zip_file.writestr(filename, img_data)
+
+        zip_buffer.seek(0)
+
+        if zip_buffer.getbuffer().nbytes == 0:
+            raise HTTPException(status_code=404, detail="No se encontraron imágenes para los UUIDs dados.")
+
+        return StreamingResponse(
+            zip_buffer,
+            media_type="application/zip",
+            headers={"Content-Disposition": "attachment; filename=qrs_seleccionados.zip"}
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error generating selected zip: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+@router.delete("/delete-all", response_model=dict)
+async def delete_all_guests():
+    """Borra todos los documentos de la colección 'guests' en Firestore."""
+    try:
+        db = get_db()
+        guests_ref = db.collection(collection_name)
+        docs = guests_ref.stream()
+        
+        deleted_count = 0
+        batch = db.batch()
+        
+        for doc in docs:
+            batch.delete(doc.reference)
+            deleted_count += 1
+            # Firestore batch limit is 500
+            if deleted_count % 500 == 0:
+                batch.commit()
+                batch = db.batch()
+        
+        batch.commit()
+        return {"status": "success", "message": f"Se borraron {deleted_count} invitados de Firestore."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/delete-qrs-bucket", response_model=dict)
+async def delete_all_qrs_bucket():
+    """Borra todos los archivos de la carpeta 'qrs/' en Google Cloud Storage."""
+    try:
+        blobs = list_files("qrs/")
+        if not blobs:
+            return {"status": "info", "message": "No hay archivos en la carpeta qrs/."}
+        
+        blob_names = [blob.name for blob in blobs]
+        delete_files(blob_names)
+        
+        return {"status": "success", "message": f"Se borraron {len(blob_names)} archivos del bucket GCS."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/all", response_model=List[Guest])
 async def get_all_guests_from_db():
     try:
@@ -203,3 +317,4 @@ async def get_all_guests_from_db():
         return guests
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
