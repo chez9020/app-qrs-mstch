@@ -275,8 +275,11 @@
 
         async function onScanSuccess(decodedText) {
             if (!isScanning) return;
+            isScanning = false; // Bloqueo instantáneo
+            
             try {
                 const res = await fetch('/api/scanner/validate', {
+
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ uuid: decodedText })

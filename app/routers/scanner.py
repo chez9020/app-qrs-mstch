@@ -30,6 +30,11 @@ async def validate_guest(scan: ScanRequest):
     
     from fastapi.responses import JSONResponse
     
+    headers = {
+        "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+        "Pragma": "no-cache"
+    }
+    
     if not doc.exists:
         return JSONResponse(
             status_code=404,
@@ -37,7 +42,8 @@ async def validate_guest(scan: ScanRequest):
                 "status": "error",
                 "message": "No registrado",
                 "timestamp": timestamp.isoformat() if timestamp else None
-            }
+            },
+            headers=headers
         )
     
     guest_data = doc.to_dict()
@@ -65,9 +71,9 @@ async def validate_guest(scan: ScanRequest):
                 "message": "Ya utilizado",
                 "guest_name": guest_data.get('name'),
                 "timestamp": guest_data.get("scan_timestamp").isoformat() if guest_data.get("scan_timestamp") else None
-            }
+            },
+            headers=headers
         )
-    
     else:
         return JSONResponse(
             status_code=400,
@@ -76,6 +82,6 @@ async def validate_guest(scan: ScanRequest):
                 "message": "Invitación inválida",
                 "guest_name": guest_data.get('name'),
                 "timestamp": timestamp.isoformat() if timestamp else None
-            }
+            },
+            headers=headers
         )
-
