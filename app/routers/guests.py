@@ -175,7 +175,7 @@ async def download_all_qrs(background_tasks: BackgroundTasks):
             for blob in blobs:
                 # Descargar contenido del blob
                 file_content = blob.download_as_bytes()
-                # Nombre del archivo dentro del zip (quitamos la carpeta para que estén en raíz del zip)
+                # Para el ZIP de 'todos', el blob ya tiene el nombre idconsecutivo_nombre.png
                 archive_name = blob.name.replace("qrs/", "")
                 zip_file.writestr(archive_name, file_content)
         
@@ -220,7 +220,10 @@ async def download_selected_qrs(body: DownloadSelectionRequest):
 
                 guest = doc.to_dict()
                 name = "".join(x for x in str(guest.get("name", "guest")) if x.isalnum() or x in " _-").strip()
-                guest_id = guest.get("id", guest_uuid[:6])
+                
+                # USAR EL ID CONSECUTIVO PARA EL NOMBRE DEL ARCHIVO EN EL ZIP
+                guest_id = guest.get("id_consecutivo", guest.get("id", guest_uuid[:6]))
+                
                 filename = f"{guest_id}_{name}.png"
                 qr_url = guest.get("qr_code_url", "")
 

@@ -5,361 +5,278 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | MSTCH Digital</title>
     <link rel="stylesheet" href="/static/css/styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <style>
         .mstch-logo-complex {
-            position: absolute;
-            top: 21px;
-            right: 18px;
+            display: flex;
+            justify-content: center;
+            padding: 50px 0 20px;
+            width: 100%;
+            z-index: 1000;
         }
         .main-wrapper {
-            max-width: 1280px;
+            max-width: 1184px;
             margin: 0 auto;
-            padding: 60px 48px 120px 48px;
+            padding: 0 48px 120px 48px;
             display: flex;
             flex-direction: column;
             gap: 32px;
         }
+
+        /* ── HEADER ── */
         .dashboard-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-        }
-        .header-text h1 {
-            font-size: 48px;
-            font-weight: 700;
+            align-items: flex-end;
             margin-bottom: 8px;
         }
-        .header-text .system-tag {
-            color: var(--primary-color);
-            font-size: 10px;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            font-weight: 700;
-        }
-        .header-text .header-desc {
-            color: #d3c4af;
-            font-size: 14px;
-            max-width: 600px;
-        }
+        .header-text h1 { font-size: 48px; font-weight: 700; margin: 0 0 8px; line-height: 1; }
+        .header-text p { color: #a8a29e; font-size: 14px; max-width: 480px; margin: 0; }
 
-        .filter-area {
-            display: flex;
-            gap: 16px;
-            align-items: flex-end;
+        .date-picker-box {
+            text-align: right;
         }
-        .filter-input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .filter-label {
+        .date-picker-box label {
+            display: block;
             font-size: 10px;
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .filter-input {
-            background: rgba(28, 27, 27, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 4px;
-            padding: 10px 16px;
+            letter-spacing: 2px;
             color: white;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .date-input-wrap {
+            background: rgba(28, 27, 27, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px 16px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 12px;
-            height: 40px;
-            min-width: 140px;
-        }
-        .filter-input input {
-            background: transparent;
-            border: none;
+            gap: 12px;
             color: white;
-            outline: none;
-            font-family: var(--font-main);
+            backdrop-filter: blur(10px);
         }
 
-        .btn-filtrar {
-            background: #d858a3;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            height: 40px;
-            padding: 0 32px;
-            font-weight: 700;
-            font-size: 12px;
-            letter-spacing: 1.2px;
-            text-transform: uppercase;
-            cursor: pointer;
-        }
-
-        .metrics-row {
+        /* ── STATS ── */
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
-        .metric-card-mstch {
-            background: rgba(28, 27, 27, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            padding: 25px;
+        .stat-card {
+            background: rgba(25, 25, 31, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);
         }
-        .metric-data h4 {
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-            color: #ffffff;
+        .stat-info h2 {
+            font-size: 11px;
             font-weight: 700;
+            letter-spacing: 1.5px;
+            color: #a8a29e;
+            text-transform: uppercase;
+            margin-bottom: 12px;
         }
-        .metric-data .value {
-            font-size: 36px;
-            font-weight: 900;
-            color: #e5e2e1;
-            line-height:1;
+        .stat-info .value {
+            font-size: 48px;
+            font-weight: 700;
+            color: white;
+            line-height: 1;
         }
-        .metric-icon-box {
-            background: rgba(216, 88, 163, 0.1);
-            border-radius: 8px;
-            width: 56px;
-            height: 56px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #d858a3;
+        .stat-icon {
+            width: 56px; height: 56px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--primary-color);
         }
 
-        .recent-header {
+        /* ── RECENT LIST ── */
+        .section-title {
             display: flex;
             align-items: center;
             gap: 12px;
             font-size: 24px;
             font-weight: 700;
-            margin-top: 16px;
+            margin: 12px 0;
         }
-        .recent-header .material-icons-round {
-            color: #d858a3;
-        }
+        .section-title .material-icons-round { color: var(--primary-color); }
 
-        .table-container-mstch {
+        .table-card {
             background: rgba(28, 27, 27, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
             overflow: hidden;
             backdrop-filter: blur(10px);
         }
-        .mstch-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .mstch-table th {
-            background: rgba(28, 27, 27, 0.5);
-            padding: 24px 32px;
+        .recent-table { width: 100%; border-collapse: collapse; }
+        .recent-table th {
+            padding: 16px 24px;
             text-align: left;
             font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 2.2px;
-            color: white;
             font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.02);
         }
-        .mstch-table td {
-            padding: 32px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+        .recent-table td {
+            padding: 20px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
         }
-        .td-name { font-size: 16px; font-weight: 700; color: #e5e2e1; }
-        .td-time { font-size: 16px; color: #f6f6f6; text-align: right; }
+        .recent-table tr:hover { background: rgba(255,255,255,0.02); }
 
-        .footer-mstch {
-            padding: 17px 32px 16px 32px;
+        .footer-info {
+            padding: 16px 24px;
+            background: rgba(0,0,0,0.2);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            background: rgba(28, 27, 27, 0.3);
         }
-        .footer-text {
-            color: #78716c;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 700;
+        .active-tag {
+            font-size: 9px; font-weight: 700; letter-spacing: 1px;
+            color: #78716c; text-transform: uppercase;
         }
+        .pagination-dummy { display: flex; gap: 8px; }
+        .p-dot { width: 32px; height: 32px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 12px; color: #a8a29e; }
+        .p-dot.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
 
-        .paginacion {
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            .mstch-logo-complex {
             display: flex;
-            gap: 8px;
-        }
-        .pag-btn {
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
             justify-content: center;
-            font-size: 10px;
-            font-weight: 700;
-            border-radius: 4px;
-            cursor: pointer;
+            padding: 50px 0 20px;
+            width: 100%;
+            z-index: 1000;
         }
-        .pag-btn-active { background: #d858a3; color: white; }
-        .pag-btn-outline { border: 1px solid rgba(255,255,255,0.05); color: #a8a29e; }
+            .mstch-logo-complex img { height: 40px; }
+            .dashboard-header { flex-direction: column; align-items: stretch; gap: 24px; }
+            .date-picker-box { text-align: left; }
+            .header-text h1 { font-size: 32px; }
+            .stats-grid { grid-template-columns: 1fr; gap: 12px; }
+            .stat-card { padding: 24px; }
+            .stat-info .value { font-size: 36px; }
+            .table-card { margin: 0 -8px; border-radius: 12px; overflow-x: auto; }
+            .recent-table { min-width: 400px; }
+            .section-title { font-size: 20px; }
+        }
     </style>
 </head>
 <body class="bg-black">
+
     <div class="mstch-logo-complex">
-        <img src="https://mstch.com/wp-content/uploads/2022/10/logo_mstch_blanco_website.png" alt="MSTCH" style="height: 53px;">
+        <img src="/static/img/logo.png" alt="MSTCH">
     </div>
 
     <div class="main-wrapper animate-fade-in">
-        <header class="dashboard-header">
+        
+        <div class="dashboard-header">
             <div class="header-text">
                 <span class="system-tag">SISTEMA DE REGISTRO</span>
                 <h1>Dashboard</h1>
-                <p class="header-desc">Real-time surveillance and entry authorization for the private registry.</p>
+                <p>Real-time surveillance and entry authorization for the private registry.</p>
             </div>
-
-            <div class="filter-area">
-                <div class="filter-input-group">
-                    <span class="filter-label">Desde</span>
-                    <div class="filter-input">
-                        <span class="material-icons-round" style="font-size: 18px;">calendar_today</span>
-                        <input type="text" id="start-date-text" value="12 OCT 2023" style="width: 85px;">
-                    </div>
-                </div>
-                <div class="filter-input-group">
-                    <span class="filter-label">Hasta</span>
-                    <div class="filter-input">
-                        <span class="material-icons-round" style="font-size: 18px;">calendar_today</span>
-                        <input type="text" id="end-date-text" value="13 OCT 2023" style="width: 85px;">
-                    </div>
-                </div>
-                <button class="btn-filtrar">FILTRAR</button>
-            </div>
-        </header>
-
-        <section class="metrics-row">
-            <div class="metric-card-mstch">
-                <div class="metric-data">
-                    <h4>Total Invitados</h4>
-                    <div class="value" id="total-guests">1,248</div>
-                </div>
-                <div class="metric-icon-box">
-                    <span class="material-icons-round">people</span>
+            <div class="date-picker-box">
+                <label>DESDE</label>
+                <div class="date-input-wrap">
+                    <span class="material-icons-round" style="color:var(--primary-color); font-size: 18px;">calendar_today</span>
+                    <span style="font-size: 13px; font-weight: 600;">12 OCT 2023</span>
                 </div>
             </div>
-
-            <div class="metric-card-mstch">
-                <div class="metric-data">
-                    <h4>Total Ingresados</h4>
-                    <div class="value" id="checked-in-count">842</div>
-                </div>
-                <div class="metric-icon-box">
-                    <span class="material-icons-round">logout</span>
-                </div>
-            </div>
-
-            <div class="metric-card-mstch">
-                <div class="metric-data">
-                    <h4>Asistencia %</h4>
-                    <div class="value" id="attendance-rate">67.4%</div>
-                </div>
-                <div class="metric-icon-box">
-                    <span class="material-icons-round">bar_chart</span>
-                </div>
-            </div>
-        </section>
-
-        <div class="recent-header">
-            <span class="material-icons-round">history</span>
-            Ingresos Recientes
         </div>
 
-        <section class="table-container-mstch">
-            <table class="mstch-table">
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th style="text-align: right;">Hora</th>
-                    </tr>
-                </thead>
-                <tbody id="recent-checkins">
-                    <tr>
-                        <td class="td-name">Fernando García</td>
-                        <td class="td-time">7/3/2026, 10:04:10 am</td>
-                    </tr>
-                    <tr>
-                        <td class="td-name">Daniel Hernández</td>
-                        <td class="td-time">7/3/2026, 10:04:10 am</td>
-                    </tr>
-                </tbody>
-            </table>
-            <footer class="footer-mstch">
-                <div class="footer-text">SECURITY MONITORING ACTIVE ACROSS ALL GATES</div>
-                <div class="paginacion">
-                    <div class="pag-btn pag-btn-active">1</div>
-                    <div class="pag-btn pag-btn-outline">2</div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h2>TOTAL INVITADOS</h2>
+                    <div class="value" id="total-guests">0</div>
                 </div>
-            </footer>
-        </section>
+                <div class="stat-icon">
+                    <span class="material-icons-round">groups</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h2>TOTAL INGRESADOS</h2>
+                    <div class="value" id="checked-in">0</div>
+                </div>
+                <div class="stat-icon">
+                    <span class="material-icons-round">login</span>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="section-title">
+                <span class="material-icons-round">history</span>
+                Ingresos Recientes
+            </div>
+            
+            <div class="table-card">
+                <table class="recent-table">
+                    <thead>
+                        <tr>
+                            <th>NOMBRE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-list">
+                        <tr><td style="color:#78716c; text-align:center; padding:40px;">Cargando ingresos...</td></tr>
+                    </tbody>
+                </table>
+                <div class="footer-info">
+                    <div class="active-tag">SECURITY MONITORING ACTIVE ACROSS ALL GATES</div>
+                    <div class="pagination-dummy">
+                        <div class="p-dot active">1</div>
+                        <div class="p-dot">2</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <nav class="nav-bar">
-        <a href="/" class="nav-item">
-            <span class="material-icons-round">home</span>
-            HOME
-        </a>
-        <a href="/scanner" class="nav-item">
-            <span class="material-icons-round">qr_code_scanner</span>
-            ESCANEAR
-        </a>
-        <a href="/dashboard" class="nav-item active">
-            <span class="material-icons-round">dashboard</span>
-            DASHBOARD
-        </a>
-        <a href="/invitados" class="nav-item">
-            <span class="material-icons-round">people</span>
-            INVITADOS
-        </a>
-        <a href="/capturas" class="nav-item">
-            <span class="material-icons-round">photo_camera</span>
-            INGRESOS
-        </a>
+        <a href="/" class="nav-item"><span class="material-icons-round">home</span>HOME</a>
+        <a href="/scanner" class="nav-item"><span class="material-icons-round">qr_code_scanner</span>ESCANEAR</a>
+        <a href="/dashboard" class="nav-item active"><span class="material-icons-round">dashboard</span>DASHBOARD</a>
+        <a href="/invitados" class="nav-item"><span class="material-icons-round">people</span>INVITADOS</a>
+        <a href="/capturas" class="nav-item"><span class="material-icons-round">photo_camera</span>INGRESOS</a>
     </nav>
 
     <script>
-        // Use real fetch in final implementation, mocked here for design check
-        async function fetchStats() {
+        async function loadStats() {
             try {
-                const response = await fetch('/api/dashboard/stats');
-                if (response.ok) {
-                    const data = await response.json();
-                    document.getElementById('total-guests').innerText = data.total_guests.toLocaleString();
-                    document.getElementById('checked-in-count').innerText = data.checked_in_count.toLocaleString();
-                    document.getElementById('attendance-rate').innerText = data.attendance_rate.toFixed(1) + '%';
-                    
-                    const tbody = document.getElementById('recent-checkins');
-                    tbody.innerHTML = '';
-                    data.recent_checkins.forEach(guest => {
-                        const tr = document.createElement('tr');
-                        const time = new Date(guest.scan_timestamp).toLocaleString();
-                        tr.innerHTML = `
-                            <td class="td-name">${guest.name}</td>
-                            <td class="td-time">${time}</td>
-                        `; 
-                        tbody.appendChild(tr);
-                    });
+                const response = await fetch('/api/guests/stats');
+                const data = await response.json();
+                
+                document.getElementById('total-guests').innerText = data.total_guests || 0;
+                document.getElementById('checked-in').innerText = data.checked_in_count || 0;
+                
+                const list = document.getElementById('recent-list');
+                if (!data.recent_checkins || data.recent_checkins.length === 0) {
+                    list.innerHTML = '<tr><td style="color:#78716c; text-align:center; padding:40px;">No hay ingresos hoy.</td></tr>';
+                } else {
+                    list.innerHTML = data.recent_checkins.map(g => `
+                        <tr>
+                            <td>${g.name}</td>
+                        </tr>
+                    `).join('');
                 }
-            } catch (e) {
-                console.error(e);
+            } catch (error) {
+                console.error("Error cargando dashboard:", error);
             }
         }
-        
-        fetchStats();
+
+        setInterval(loadStats, 5000);
+        loadStats();
     </script>
 </body>
 </html>
