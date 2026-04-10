@@ -2,131 +2,182 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capturas de Ingreso | MSTCH Digital Event</title><link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Capturas de Ingreso | MSTCH Digital</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <style>
-        .container { max-width: 900px; }
-        .table-container { overflow-x: auto; max-height: 70vh; overflow-y: auto; }
-        .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+        * { box-sizing:border-box; margin:0; padding:0; }
+        :root { --primary:#d858a3; --grad:linear-gradient(135deg,#d858a3 0%,#a02c6b 100%); --glow:rgba(216,88,163,0.35); --card:rgba(25,25,31,0.5); --border:rgba(255,255,255,0.1); }
+        html,body { width:100%; background:#000; color:#e5e2e1; font-family:'Inter',sans-serif; overflow-x:hidden; }
+
+        .page { display:flex; flex-direction:column; width:100%; min-height:100vh; padding-bottom:90px; }
+
+        .logo-bar { width:100%; display:flex; justify-content:center; padding:24px 16px 12px; }
+        .logo-bar img { height:64px; object-fit:contain; }
+
+        .page-header { padding:0 16px 16px; text-align:center; }
+        .system-tag { display:block; color:var(--primary); font-size:10px; letter-spacing:3px; text-transform:uppercase; font-weight:700; margin-bottom:6px; }
+        .page-header h1 { font-size:30px; font-weight:700; color:white; }
+
+        .content { padding:0 12px; display:flex; flex-direction:column; gap:14px; }
+
+        /* FILTER */
+        .filter-card { background:var(--card); border:1px solid var(--border); border-radius:18px; padding:20px; display:flex; flex-direction:column; gap:14px; }
+        .input-group label { display:block; font-size:10px; font-weight:700; letter-spacing:1.5px; color:#555; text-transform:uppercase; margin-bottom:6px; }
+        .custom-input { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:12px 14px; color:white; width:100%; font-family:'Inter',sans-serif; font-size:13px; outline:none; transition:border-color 0.2s; }
+        .custom-input:focus { border-color:var(--primary); }
+        .filter-actions { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+        .btn-action {
+            background:var(--grad); color:white; border:none; border-radius:10px;
+            padding:12px 10px; font-weight:700; font-size:11px; cursor:pointer;
+            display:flex; align-items:center; justify-content:center; gap:6px;
+            box-shadow:0 4px 14px var(--glow); font-family:'Inter',sans-serif;
+            letter-spacing:0.5px; transition:all 0.2s;
+        }
+        .btn-action:hover { filter:brightness(1.1); }
+        .btn-action.secondary { background:rgba(255,255,255,0.05); box-shadow:none; border:1px solid var(--border); }
+        .btn-action.green { background:linear-gradient(135deg,#34c759,#1a8c38); box-shadow:0 4px 14px rgba(52,199,89,0.3); }
+        .btn-action .material-icons-round { font-size:14px; }
+
+        /* TABLE */
+        .table-wrap { background:var(--card); border:1px solid var(--border); border-radius:18px; overflow:hidden; }
+        .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+        table { width:100%; border-collapse:collapse; min-width:520px; }
+        thead th { padding:14px 16px; text-align:left; font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#555; border-bottom:1px solid rgba(255,255,255,0.05); background:rgba(255,255,255,0.02); }
+        tbody td { padding:14px 16px; font-size:13px; border-bottom:1px solid rgba(255,255,255,0.03); }
+        tbody tr:last-child td { border-bottom:none; }
+        .td-id { color:var(--primary); font-weight:700; }
+        .td-name { font-weight:600; }
+        .td-uuid { font-family:monospace; font-size:11px; color:#555; }
+        .td-date { color:#78716c; font-size:12px; }
+        .table-footer { padding:12px 16px; background:rgba(0,0,0,0.2); font-size:10px; font-weight:700; letter-spacing:1px; color:#555; text-transform:uppercase; }
+
+        /* NAV */
+        .nav-bar { display:flex; justify-content:space-around; align-items:center; padding:10px 8px; background:rgba(5,5,5,0.97); backdrop-filter:blur(12px); border-top:1px solid rgba(255,255,255,0.06); position:fixed; bottom:0; left:0; width:100%; z-index:1000; }
+        .nav-item { color:#555; text-decoration:none; font-size:8px; display:flex; flex-direction:column; align-items:center; gap:3px; text-transform:uppercase; letter-spacing:1px; flex:1; }
+        .nav-item .material-icons-round { font-size:20px; }
+        .nav-item.active { color:var(--primary); }
     </style>
 </head>
 <body>
-    <div class="container">
+<div class="page">
+    <div class="logo-bar"><img src="/static/img/logo.png" alt="MSTCH"></div>
+
+    <div class="page-header">
+        <span class="system-tag">Seguridad y Control</span>
         <h1>Capturas de Ingreso</h1>
-        
-        <div class="card toolbar">
-            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                <label>Desde:</label>
-                <input type="datetime-local" id="start-date" class="search-bar" style="margin:0; width:auto;">
-                <label>Hasta:</label>
-                <input type="datetime-local" id="end-date" class="search-bar" style="margin:0; width:auto;">
-                <button class="btn" onclick="fetchCapturas()" style="width:auto; margin:0; padding: 10px 20px;">Filtrar 🔍</button>
-                <button class="btn" onclick="clearFilters()" style="width:auto; margin:0; padding: 10px 20px; background:#333; border:1px solid white;">Limpiar</button>
-                <button class="btn" onclick="exportCSV()" style="width:auto; margin:0; padding: 10px 20px; background:var(--primary-color); color:black;">Exportar CSV</button>
+    </div>
+
+    <div class="content">
+        <div class="filter-card">
+            <div class="input-group">
+                <label>Fecha Desde</label>
+                <input type="datetime-local" id="fecha-inicio" class="custom-input">
+            </div>
+            <div class="input-group">
+                <label>Fecha Hasta</label>
+                <input type="datetime-local" id="fecha-fin" class="custom-input">
+            </div>
+            <div class="filter-actions">
+                <button class="btn-action" onclick="filtrarCapturas()">
+                    <span class="material-icons-round">filter_list</span>FILTRAR
+                </button>
+                <button class="btn-action secondary" onclick="limpiarFiltros()">
+                    <span class="material-icons-round">refresh</span>LIMPIAR
+                </button>
+                <button class="btn-action green" onclick="exportarCSV()">
+                    <span class="material-icons-round">download</span>CSV
+                </button>
             </div>
         </div>
 
-        <div class="card">
-            <div class="table-container">
-                <table id="capturas-table">
+        <div class="table-wrap">
+            <div class="table-scroll">
+                <table>
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th>Nombre</th>
                             <th>UUID</th>
-                            <th>Fecha/Hora Ingreso</th>
+                            <th>Fecha Ingreso</th>
                         </tr>
                     </thead>
-                    <tbody id="capturas-tbody">
-                        <!-- Data will be loaded here -->
+                    <tbody id="lista-capturas">
+                        <tr><td colspan="4" style="text-align:center;padding:32px;color:#555">Cargando...</td></tr>
                     </tbody>
                 </table>
             </div>
-            <div id="count-summary" style="margin-top:15px; font-weight:bold; color:var(--primary-color);">
-                Total capturas en rango: <span id="total-count">0</span>
-            </div>
-        </div>
-
-        <div class="nav-bar">
-            <a href="/" class="nav-item"><span class="material-icons-round">home</span></a>
-            <a href="/scanner" class="nav-item"><span class="material-icons-round">qr_code_scanner</span></a>
-            <a href="/dashboard" class="nav-item"><span class="material-icons-round">dashboard</span></a>
-            <a href="/invitados" class="nav-item"><span class="material-icons-round">people</span></a>
+            <div class="table-footer" id="total-text">Total capturas: 0</div>
         </div>
     </div>
+</div>
 
-    <script>
-        async function fetchCapturas() {
-            const startDate = document.getElementById('start-date').value;
-            const endDate = document.getElementById('end-date').value;
-            
-            let url = '/api/dashboard/stats';
-            const params = new URLSearchParams();
-            if (startDate) params.append('start_date', startDate);
-            if (endDate) params.append('end_date', endDate);
-            params.append('all_checkins', 'true');
-            
-            if (params.toString()) url += '?' + params.toString();
+<nav class="nav-bar">
+    <a href="/" class="nav-item"><span class="material-icons-round">home</span>HOME</a>
+    <a href="/scanner" class="nav-item"><span class="material-icons-round">qr_code_scanner</span>ESCANEAR</a>
+    <a href="/dashboard" class="nav-item"><span class="material-icons-round">dashboard</span>DASHBOARD</a>
+    <a href="/invitados" class="nav-item"><span class="material-icons-round">people</span>INVITADOS</a>
+    <a href="/capturas" class="nav-item active"><span class="material-icons-round">photo_camera</span>INGRESOS</a>
+</nav>
 
-            try {
-                const response = await fetch(url);
-                if (response.ok) {
-                    const data = await response.json();
-                    const tbody = document.getElementById('capturas-tbody');
-                    tbody.innerHTML = '';
-                    
-                    // Note: recent_checkins only gives top 10. 
-                    // I should probably have a separate endpoint for ALL capturas if I want a full list.
-                    // For now, I'll use recent_checkins but ideally the API should return more if filtered.
-                    // Let's modify the API to return ALL filtered checkins if a flag is passed.
-                    
-                    data.recent_checkins.forEach(g => {
-                        const tr = document.createElement('tr');
-                        const time = new Date(g.scan_timestamp).toLocaleString();
-                        tr.innerHTML = `
-                            <td>${g.id}</td>
-                            <td>${g.name}</td>
-                            <td style="font-size:0.8rem; font-family:monospace;">${g.uuid}</td>
-                            <td>${time}</td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
-                    
-                    document.getElementById('total-count').innerText = data.checked_in_count;
-                }
-            } catch (e) {
-                console.error(e);
-            }
+<script>
+    let todasCapturas = [];
+
+    async function cargarCapturas() {
+        try {
+            const res = await fetch('/api/guests/all');
+            const data = await res.json();
+            todasCapturas = data.filter(g => g.status === 'checked_in').sort((a,b) => new Date(b.scan_timestamp) - new Date(a.scan_timestamp));
+            render(todasCapturas);
+        } catch(e) {
+            document.getElementById('lista-capturas').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:32px;color:#ff6b60">Error de conexión.</td></tr>';
         }
+    }
 
-        function clearFilters() {
-            document.getElementById('start-date').value = '';
-            document.getElementById('end-date').value = '';
-            fetchCapturas();
+    function render(data) {
+        const tbody = document.getElementById('lista-capturas');
+        if (!data.length) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:32px;color:#555">Sin registros de ingreso.</td></tr>';
+        } else {
+            tbody.innerHTML = data.map(g => `
+                <tr>
+                    <td class="td-id">${g.id_consecutivo ?? g.id}</td>
+                    <td class="td-name">${g.name}</td>
+                    <td class="td-uuid">${(g.uuid||'').slice(0,16)}...</td>
+                    <td class="td-date">${formatDate(g.scan_timestamp)}</td>
+                </tr>`).join('');
         }
+        document.getElementById('total-text').innerText = `Total capturas en rango: ${data.length}`;
+    }
 
-        function exportCSV() {
-            const table = document.getElementById("capturas-table");
-            let csv = [];
-            for (let i = 0; i < table.rows.length; i++) {
-                let row = [], cols = table.rows[i].querySelectorAll("td, th");
-                for (let j = 0; j < cols.length; j++) 
-                    row.push('"' + cols[j].innerText + '"');
-                csv.push(row.join(","));
-            }
-            const csvContent = "data:text/csv;charset=utf-8," + csv.join("\n");
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "capturas_ingreso.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+    function filtrarCapturas() {
+        const ini = document.getElementById('fecha-inicio').value;
+        const fin = document.getElementById('fecha-fin').value;
+        if (!ini || !fin) { render(todasCapturas); return; }
+        const t1 = new Date(ini).getTime(), t2 = new Date(fin).getTime();
+        render(todasCapturas.filter(g => { const t = new Date(g.scan_timestamp).getTime(); return t >= t1 && t <= t2; }));
+    }
 
-        fetchCapturas();
-    </script>
+    function limpiarFiltros() {
+        document.getElementById('fecha-inicio').value = '';
+        document.getElementById('fecha-fin').value = '';
+        render(todasCapturas);
+    }
+
+    function exportarCSV() {
+        const headers = ['ID','Nombre','UUID','Fecha_Ingreso'];
+        const rows = todasCapturas.map(g => [g.id_consecutivo??g.id, `"${g.name}"`, g.uuid, formatDate(g.scan_timestamp)]);
+        const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+        const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([csv],{type:'text/csv'})), download: 'ingresos_mstch.csv' });
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+
+    function formatDate(ts) {
+        try { return new Date(ts).toLocaleString('es-MX'); } catch { return ts; }
+    }
+
+    cargarCapturas();
+</script>
 </body>
 </html>

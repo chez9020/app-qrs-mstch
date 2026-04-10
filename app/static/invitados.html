@@ -2,575 +2,308 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>Gestión de Invitados | MSTCH Digital</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <style>
-        .mstch-logo-complex {
-            display: flex;
-            justify-content: center;
-            padding: 50px 0 20px;
-            width: 100%;
-            z-index: 1000;
-        }
-        .main-wrapper {
-            max-width: 1184px;
-            margin: 0 auto;
-            padding: 0 48px 120px 48px;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
+        * { box-sizing:border-box; margin:0; padding:0; }
+        :root { --primary:#d858a3; --grad:linear-gradient(135deg,#d858a3 0%,#a02c6b 100%); --glow:rgba(216,88,163,0.35); --card:rgba(25,25,31,0.5); --border:rgba(255,255,255,0.1); }
+        html,body { width:100%; background:#000; color:#e5e2e1; font-family:'Inter',sans-serif; overflow-x:hidden; }
 
-        /* ── HEADER ── */
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-        }
-        .header-text .system-tag {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: var(--primary-color);
-            display: block;
-            margin-bottom: 8px;
-        }
-        .header-text h1 {
-            font-size: 48px;
-            font-weight: 700;
-            margin: 0 0 8px;
-            line-height: 1;
-        }
-        .header-text p { color: #bfbfbf; font-size: 14px; margin: 0; }
+        .page { display:flex; flex-direction:column; width:100%; min-height:100vh; padding-bottom:90px; }
 
-        .btn-download-qrs {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: var(--primary-color);
-            color: white;
-            font-family: var(--font-main);
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            padding: 14px 28px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: opacity 0.2s;
-            white-space: nowrap;
-        }
-        .btn-download-qrs:hover { opacity: 0.85; }
+        .logo-bar { width:100%; display:flex; justify-content:center; padding:24px 16px 12px; }
+        .logo-bar img { height:64px; object-fit:contain; }
 
-        /* ── TOOLBAR ── */
-        .toolbar-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 16px;
-        }
-        .search-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: rgba(28, 27, 27, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 8px;
-            padding: 12px 20px;
-            width: 360px;
-            backdrop-filter: blur(10px);
-        }
-        .search-wrapper .material-icons-round { color: var(--primary-color); font-size: 20px; }
-        .search-wrapper input {
-            background: transparent;
-            border: none;
-            outline: none;
-            color: white;
-            font-size: 14px;
-            font-family: var(--font-main);
-            width: 100%;
-        }
-        .search-wrapper input::placeholder { color: #78716c; }
+        .page-header { padding:0 16px 16px; }
+        .system-tag { display:block; color:var(--primary); font-size:10px; letter-spacing:3px; text-transform:uppercase; font-weight:700; margin-bottom:6px; }
+        .page-header h1 { font-size:30px; font-weight:700; color:white; margin-bottom:4px; }
+        .page-header p { color:#555; font-size:13px; }
 
-        .toolbar-actions { display: flex; gap: 12px; }
+        .content { padding:0 12px; display:flex; flex-direction:column; gap:12px; }
 
+        /* TOOLBAR */
+        .search-box {
+            background:var(--card); border:1px solid var(--border); border-radius:12px;
+            padding:12px 16px; display:flex; align-items:center; gap:10px;
+        }
+        .search-box .material-icons-round { color:#555; font-size:20px; }
+        .search-box input { background:none; border:none; outline:none; color:white; font-family:'Inter',sans-serif; font-size:14px; width:100%; }
+        .search-box input::placeholder { color:#555; }
+
+        .actions-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
         .btn-action {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: white;
-            font-family: var(--font-main);
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            padding: 12px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s;
+            background:var(--grad); color:white; border:none; border-radius:10px;
+            padding:12px 10px; font-weight:700; font-size:11px; cursor:pointer;
+            display:flex; align-items:center; justify-content:center; gap:6px;
+            box-shadow:0 4px 14px var(--glow); font-family:'Inter',sans-serif;
+            letter-spacing:0.5px; transition:all 0.2s;
         }
-        .btn-action:hover { border-color: rgba(255,255,255,0.35); }
-        .btn-action.danger { border-color: rgba(255, 59, 48, 0.4); color: #ff6b60; }
-        .btn-action.danger:hover { border-color: rgba(255, 59, 48, 0.8); background: rgba(255, 59, 48, 0.07); }
+        .btn-action:hover { filter:brightness(1.1); }
+        .btn-action.secondary { background:rgba(255,255,255,0.05); box-shadow:none; border:1px solid var(--border); }
+        .btn-action.danger { background:linear-gradient(135deg,#c0392b,#96281b); box-shadow:0 4px 14px rgba(192,57,43,0.35); }
+        .btn-action.green { background:linear-gradient(135deg,#34c759,#1a8c38); box-shadow:0 4px 14px rgba(52,199,89,0.3); }
+        .btn-action .material-icons-round { font-size:14px; }
 
-        /* ── TABLE ── */
-        .table-card {
-            background: rgba(28, 27, 27, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-        }
-        .mstch-table { width: 100%; border-collapse: collapse; }
-        .mstch-table thead tr { background: rgba(28, 27, 27, 0.5); }
-        .mstch-table th {
-            padding: 18px 24px;
-            text-align: left;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: white;
-        }
-        .mstch-table tbody tr {
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            transition: background 0.15s;
-        }
-        .mstch-table tbody tr:hover { background: rgba(255, 255, 255, 0.03); }
-        .mstch-table td { padding: 18px 24px; font-size: 14px; color: #d3c4af; }
+        /* DANGER ZONE */
+        .danger-label { font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#555; padding:4px 0; }
 
-        .td-id { font-size: 13px; color: #78716c; font-weight: 600; }
-        .td-name { font-weight: 700; color: #e5e2e1; font-size: 15px; }
-        .td-email { color: #a8a29e; }
-        .td-uuid { font-family: monospace; font-size: 11px; color: #d858a3; opacity: 0.8; }
+        /* TABLE */
+        .table-wrap { background:var(--card); border:1px solid var(--border); border-radius:18px; overflow:hidden; }
+        .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+        table { width:100%; border-collapse:collapse; min-width:620px; }
+        thead th { padding:12px 14px; text-align:left; font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#555; border-bottom:1px solid rgba(255,255,255,0.05); background:rgba(255,255,255,0.02); }
+        tbody td { padding:13px 14px; font-size:13px; border-bottom:1px solid rgba(255,255,255,0.03); }
+        tbody tr:last-child td { border-bottom:none; }
+        tbody tr:hover { background:rgba(255,255,255,0.02); }
+        .td-id { color:var(--primary); font-weight:700; font-size:13px; }
+        .td-name { font-weight:600; }
+        .td-email { color:#555; font-size:12px; }
+        .td-uuid { font-family:monospace; font-size:11px; color:#555; }
 
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 99px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-        }
-        .badge-checked-in {
-            background: rgba(216, 88, 163, 0.15);
-            color: var(--primary-color);
-            border: 1px solid rgba(216, 88, 163, 0.3);
-        }
-        .badge-valid {
-            background: rgba(255, 255, 255, 0.06);
-            color: #a8a29e;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+        .badge { display:inline-block; padding:3px 10px; border-radius:99px; font-size:9px; font-weight:800; letter-spacing:1px; }
+        .badge-valid { background:rgba(52,199,89,0.12); color:#34c759; }
+        .badge-checked-in { background:rgba(216,88,163,0.15); color:var(--primary); }
 
-        /* ── TABLE FOOTER / PAGINATION ── */
-        .table-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 24px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            background: rgba(28, 27, 27, 0.3);
-        }
-        .showing-text {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: #78716c;
-        }
-        .pagination-btns { display: flex; align-items: center; gap: 6px; }
-        .pg-btn {
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            color: #a8a29e;
-            background: transparent;
-            transition: all 0.15s;
-        }
-        .pg-btn:hover:not(:disabled) { border-color: rgba(255,255,255,0.3); color: white; }
-        .pg-btn.active { background: var(--primary-color); border-color: var(--primary-color); color: white; }
-        .pg-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .table-footer { padding:12px 16px; background:rgba(0,0,0,0.2); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+        .showing-text { font-size:9px; font-weight:700; letter-spacing:1px; color:#555; text-transform:uppercase; }
+        .pagination-btns { display:flex; gap:4px; }
+        .pg-btn { background:rgba(255,255,255,0.05); border:1px solid var(--border); color:#a8a29e; border-radius:6px; width:28px; height:28px; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-family:'Inter',sans-serif; }
+        .pg-btn:disabled { opacity:0.3; cursor:not-allowed; }
+        .pg-btn.active { background:var(--grad); border-color:transparent; color:white; }
 
-        /* ── DANGER ZONE ── */
-        .danger-zone {
-            display: flex;
-            gap: 12px;
-        }
+        /* MODAL */
+        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.88); backdrop-filter:blur(14px); display:none; justify-content:center; align-items:center; z-index:2000; padding:20px; }
+        .modal-overlay.visible { display:flex; }
+        .modal-card { background:rgba(18,18,24,0.98); border:1px solid rgba(216,88,163,0.2); border-radius:24px; width:100%; max-width:400px; padding:36px 28px; text-align:center; animation:popIn 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+        @keyframes popIn { from{opacity:0;transform:scale(0.85)} to{opacity:1;transform:scale(1)} }
+        .modal-icon-wrap { width:64px; height:64px; border-radius:50%; background:rgba(216,88,163,0.1); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; }
+        .modal-icon-wrap .material-icons-round { font-size:30px; color:var(--primary); }
+        .modal-icon-wrap.success { background:rgba(52,199,89,0.1); }
+        .modal-icon-wrap.success .material-icons-round { color:#34c759; }
+        .modal-icon-wrap.error { background:rgba(255,59,48,0.1); }
+        .modal-icon-wrap.error .material-icons-round { color:#ff3b30; }
+        .modal-title { font-size:18px; font-weight:700; margin-bottom:8px; }
+        .modal-text { color:#78716c; font-size:13px; line-height:1.6; margin-bottom:24px; }
+        .modal-actions { display:flex; gap:10px; justify-content:center; }
+        .btn-modal-cancel { background:rgba(255,255,255,0.05); border:1px solid var(--border); color:#a8a29e; border-radius:8px; padding:11px 24px; font-weight:700; font-size:12px; cursor:pointer; font-family:'Inter',sans-serif; }
+        .btn-modal-confirm { background:var(--grad); border:none; color:white; border-radius:8px; padding:11px 24px; font-weight:700; font-size:12px; cursor:pointer; font-family:'Inter',sans-serif; box-shadow:0 4px 14px var(--glow); }
 
-        /* ── MODAL ── */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(12px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            padding: 24px;
-        }
-        .modal-overlay.visible { display: flex; }
-        .modal-card {
-            background: rgba(22, 21, 21, 0.98);
-            border: 1px solid rgba(216, 88, 163, 0.3);
-            border-radius: 20px;
-            width: 100%;
-            max-width: 460px;
-            padding: 40px;
-            text-align: center;
-            box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.6);
-            animation: modalIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        @keyframes modalIn {
-            from { opacity: 0; transform: scale(0.88) translateY(24px); }
-            to   { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        .modal-icon-wrap {
-            width: 72px;
-            height: 72px;
-            border-radius: 50%;
-            background: rgba(216, 88, 163, 0.12);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-        }
-        .modal-icon-wrap .material-icons-round { font-size: 36px; color: var(--primary-color); }
-        .modal-icon-wrap.success { background: rgba(52, 199, 89, 0.12); }
-        .modal-icon-wrap.success .material-icons-round { color: #34c759; }
-        .modal-icon-wrap.error { background: rgba(255, 59, 48, 0.12); }
-        .modal-icon-wrap.error .material-icons-round { color: #ff3b30; }
-        .modal-title {
-            font-size: 22px;
-            font-weight: 700;
-            color: #e5e2e1;
-            margin-bottom: 10px;
-        }
-        .modal-text {
-            color: #a8a29e;
-            font-size: 14px;
-            line-height: 1.65;
-            margin-bottom: 32px;
-        }
-        .modal-actions { display: flex; gap: 12px; justify-content: center; }
-        .btn-modal-cancel {
-            background: transparent;
-            border: 1px solid rgba(255,255,255,0.15);
-            color: #d3c4af;
-            padding: 13px 28px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 11px;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: var(--font-main);
-        }
-        .btn-modal-cancel:hover { border-color: rgba(255,255,255,0.35); color: white; }
-        .btn-modal-confirm {
-            background: var(--primary-color);
-            border: none;
-            color: white;
-            padding: 13px 28px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 11px;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: opacity 0.2s;
-            font-family: var(--font-main);
-        }
-        .btn-modal-confirm:hover { opacity: 0.85; }
+        /* NAV */
+        .nav-bar { display:flex; justify-content:space-around; align-items:center; padding:10px 8px; background:rgba(5,5,5,0.97); backdrop-filter:blur(12px); border-top:1px solid rgba(255,255,255,0.06); position:fixed; bottom:0; left:0; width:100%; z-index:1000; }
+        .nav-item { color:#555; text-decoration:none; font-size:8px; display:flex; flex-direction:column; align-items:center; gap:3px; text-transform:uppercase; letter-spacing:1px; flex:1; }
+        .nav-item .material-icons-round { font-size:20px; }
+        .nav-item.active { color:var(--primary); }
     </style>
 </head>
-<body class="bg-black">
+<body>
 
-    <!-- LOGO -->
-    <div class="mstch-logo-complex">
-        <img src="/static/img/logo.png" alt="MSTCH" style="height: 80px;">
-    </div>
-
-    <!-- MODAL -->
-    <div class="modal-overlay" id="custom-modal">
-        <div class="modal-card">
-            <div class="modal-icon-wrap" id="modal-icon-wrap">
-                <span class="material-icons-round" id="modal-icon">warning</span>
-            </div>
-            <div class="modal-title" id="modal-title">¿Estás seguro?</div>
-            <div class="modal-text" id="modal-text">Esta acción es permanente.</div>
-            <div class="modal-actions">
-                <button class="btn-modal-cancel" id="btn-modal-cancel" onclick="closeModal()">CANCELAR</button>
-                <button class="btn-modal-confirm" id="btn-modal-confirm">CONFIRMAR</button>
-            </div>
+<!-- MODAL -->
+<div class="modal-overlay" id="custom-modal">
+    <div class="modal-card">
+        <div class="modal-icon-wrap" id="modal-icon-wrap">
+            <span class="material-icons-round" id="modal-icon">warning</span>
+        </div>
+        <div class="modal-title" id="modal-title">Confirmar acción</div>
+        <div class="modal-text" id="modal-text"></div>
+        <div class="modal-actions">
+            <button class="btn-modal-cancel" id="btn-modal-cancel" onclick="closeModal()">CANCELAR</button>
+            <button class="btn-modal-confirm" id="btn-modal-confirm">CONFIRMAR</button>
         </div>
     </div>
+</div>
 
-    <div class="main-wrapper animate-fade-in">
+<div class="page">
+    <div class="logo-bar"><img src="/static/img/logo.png" alt="MSTCH"></div>
 
-        <!-- PAGE HEADER -->
-        <div class="page-header">
-            <div class="header-text">
-                <span class="system-tag">SISTEMA DE REGISTRO</span>
-                <h1>Gestión de invitados</h1>
-                <p>Manage access and entry status in real-time.</p>
-            </div>
-            <button class="btn-download-qrs" onclick="window.location.href='/descarga-qrs'">
-                <span class="material-icons-round" style="font-size: 18px;">download</span>
-                DESCARGA DE QRS
+    <div class="page-header">
+        <span class="system-tag">Sistema de Registro</span>
+        <h1>Gestión de Invitados</h1>
+        <p>Control y acceso en tiempo real.</p>
+    </div>
+
+    <div class="content">
+        <!-- SEARCH -->
+        <div class="search-box">
+            <span class="material-icons-round">search</span>
+            <input type="text" id="search-input" placeholder="Buscar por nombre..." oninput="applyFilter()">
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="actions-row">
+            <button class="btn-action secondary" onclick="loadGuests()">
+                <span class="material-icons-round">refresh</span>RECARGAR
             </button>
-        </div>
-
-        <!-- TOOLBAR -->
-        <div class="toolbar-row">
-            <div class="search-wrapper">
-                <span class="material-icons-round">search</span>
-                <input type="text" id="search-input" placeholder="Buscar por nombre" oninput="applyFilter()">
-            </div>
-            <div class="toolbar-actions">
-                <button class="btn-action" onclick="loadGuests()">
-                    <span class="material-icons-round" style="font-size: 16px;">refresh</span>
-                    RECARGAR
-                </button>
-                <button class="btn-action" onclick="exportTableToCSV()">
-                    <span class="material-icons-round" style="font-size: 16px;">download</span>
-                    EXPORTAR CSV
-                </button>
-            </div>
-        </div>
-
-        <!-- DANGER ZONE -->
-        <div class="danger-zone">
+            <button class="btn-action green" onclick="exportTableToCSV()">
+                <span class="material-icons-round">download</span>CSV
+            </button>
+            <button class="btn-action" onclick="window.location.href='/descarga-qrs'">
+                <span class="material-icons-round">qr_code</span>QRS
+            </button>
             <button class="btn-action danger" onclick="resetDatabase()">
-                <span class="material-icons-round" style="font-size: 16px;">delete_sweep</span>
-                BORRAR FIRESTORE
+                <span class="material-icons-round">delete_sweep</span>FIRESTORE
             </button>
+        </div>
+        <div class="actions-row" style="grid-template-columns:1fr;">
             <button class="btn-action danger" onclick="resetBucket()">
-                <span class="material-icons-round" style="font-size: 16px;">cloud_off</span>
-                BORRAR BUCKET QRS
+                <span class="material-icons-round">cloud_off</span>BORRAR BUCKET QRS
             </button>
         </div>
 
         <!-- TABLE -->
-        <div class="table-card">
-            <table class="mstch-table" id="guest-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Unique ID</th>
-                        <th>Nombre</th>
-                        <th>Correo</th>
-                        <th>UUID (Firma QR)</th>
-                        <th>Status</th>
-                        <th>Checked In</th>
-                    </tr>
-                </thead>
-                <tbody id="guest-tbody">
-                    <tr><td colspan="7" style="text-align:center; padding:40px; color:#78716c;">Cargando invitados...</td></tr>
-                </tbody>
-            </table>
+        <div class="table-wrap">
+            <div class="table-scroll">
+                <table id="guest-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Unique ID</th>
+                            <th>Nombre</th>
+                            <th>Correo</th>
+                            <th>UUID</th>
+                            <th>Status</th>
+                            <th>Checked In</th>
+                        </tr>
+                    </thead>
+                    <tbody id="guest-tbody">
+                        <tr><td colspan="7" style="text-align:center;padding:32px;color:#555">Cargando invitados...</td></tr>
+                    </tbody>
+                </table>
+            </div>
             <div class="table-footer">
                 <span class="showing-text" id="showing-text">MOSTRANDO 0 REGISTROS</span>
                 <div class="pagination-btns" id="pagination"></div>
             </div>
         </div>
-
     </div>
+</div>
 
-    <!-- NAV -->
-    <nav class="nav-bar">
-        <a href="/" class="nav-item"><span class="material-icons-round">home</span>HOME</a>
-        <a href="/scanner" class="nav-item"><span class="material-icons-round">qr_code_scanner</span>ESCANEAR</a>
-        <a href="/dashboard" class="nav-item"><span class="material-icons-round">dashboard</span>DASHBOARD</a>
-        <a href="/invitados" class="nav-item active"><span class="material-icons-round">people</span>INVITADOS</a>
-        <a href="/capturas" class="nav-item"><span class="material-icons-round">photo_camera</span>INGRESOS</a>
-    </nav>
+<nav class="nav-bar">
+    <a href="/" class="nav-item"><span class="material-icons-round">home</span>HOME</a>
+    <a href="/scanner" class="nav-item"><span class="material-icons-round">qr_code_scanner</span>ESCANEAR</a>
+    <a href="/dashboard" class="nav-item"><span class="material-icons-round">dashboard</span>DASHBOARD</a>
+    <a href="/invitados" class="nav-item active"><span class="material-icons-round">people</span>INVITADOS</a>
+    <a href="/capturas" class="nav-item"><span class="material-icons-round">photo_camera</span>INGRESOS</a>
+</nav>
 
-    <script>
-        let allGuests = [];
-        let filteredGuests = [];
-        let currentPage = 1;
-        const pageSize = 25;
+<script>
+    let allGuests = [], filteredGuests = [], currentPage = 1;
+    const pageSize = 25;
 
-        // ── MODAL SYSTEM ──
-        function openModal({ icon, iconType = '', title, text, showCancel = true, confirmText = 'CONFIRMAR', onConfirm }) {
-            const wrap = document.getElementById('modal-icon-wrap');
-            wrap.className = 'modal-icon-wrap' + (iconType ? ' ' + iconType : '');
-            document.getElementById('modal-icon').innerText = icon;
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-text').innerText = text;
-            document.getElementById('btn-modal-cancel').style.display = showCancel ? '' : 'none';
+    function openModal({ icon, iconType='', title, text, showCancel=true, confirmText='CONFIRMAR', onConfirm }) {
+        const wrap = document.getElementById('modal-icon-wrap');
+        wrap.className = 'modal-icon-wrap' + (iconType ? ' '+iconType : '');
+        document.getElementById('modal-icon').innerText = icon;
+        document.getElementById('modal-title').innerText = title;
+        document.getElementById('modal-text').innerText = text;
+        document.getElementById('btn-modal-cancel').style.display = showCancel ? '' : 'none';
+        const old = document.getElementById('btn-modal-confirm');
+        const btn = old.cloneNode(true);
+        btn.innerText = confirmText;
+        old.parentNode.replaceChild(btn, old);
+        btn.onclick = () => { closeModal(); if (onConfirm) onConfirm(); };
+        document.getElementById('custom-modal').classList.add('visible');
+    }
+    function closeModal() { document.getElementById('custom-modal').classList.remove('visible'); }
 
-            const oldBtn = document.getElementById('btn-modal-confirm');
-            const newBtn = oldBtn.cloneNode(true);
-            newBtn.innerText = confirmText;
-            oldBtn.parentNode.replaceChild(newBtn, oldBtn);
-            newBtn.onclick = () => { closeModal(); if (onConfirm) onConfirm(); };
-
-            document.getElementById('custom-modal').classList.add('visible');
-        }
-
-        function closeModal() {
-            document.getElementById('custom-modal').classList.remove('visible');
-        }
-
-        // ── LOAD DATA ──
-        async function loadGuests() {
-            document.getElementById('guest-tbody').innerHTML =
-                '<tr><td colspan="7" style="text-align:center; padding:40px; color:#78716c;">Cargando...</td></tr>';
-            try {
-                const res = await fetch('/api/guests/all');
-                allGuests = await res.json();
-                allGuests.sort((a, b) => parseInt(a.id_consecutivo || 0) - parseInt(b.id_consecutivo || 0));
-                filteredGuests = [...allGuests];
-                currentPage = 1;
-                render();
-            } catch (e) {
-                document.getElementById('guest-tbody').innerHTML =
-                    `<tr><td colspan="7" style="text-align:center; padding:40px; color:#ff6b60;">Error al cargar datos: ${e.message}</td></tr>`;
-            }
-        }
-
-        function applyFilter() {
-            const q = document.getElementById('search-input').value.toLowerCase();
-            filteredGuests = allGuests.filter(g => g.name.toLowerCase().includes(q));
+    async function loadGuests() {
+        document.getElementById('guest-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:#555">Cargando...</td></tr>';
+        try {
+            const res = await fetch('/api/guests/all');
+            allGuests = await res.json();
+            allGuests.sort((a,b) => parseInt(a.id_consecutivo||0) - parseInt(b.id_consecutivo||0));
+            filteredGuests = [...allGuests];
             currentPage = 1;
             render();
+        } catch(e) {
+            document.getElementById('guest-tbody').innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:#ff6b60">Error: ${e.message}</td></tr>`;
         }
+    }
 
-        function render() {
-            const tbody = document.getElementById('guest-tbody');
-            const start = (currentPage - 1) * pageSize;
-            const page = filteredGuests.slice(start, start + pageSize);
+    function applyFilter() {
+        const q = document.getElementById('search-input').value.toLowerCase();
+        filteredGuests = allGuests.filter(g => g.name.toLowerCase().includes(q));
+        currentPage = 1;
+        render();
+    }
 
-            if (page.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:40px; color:#78716c;">Sin resultados.</td></tr>';
-            } else {
-                tbody.innerHTML = page.map(g => `
-                    <tr>
-                        <td class="td-id">${g.id_consecutivo || '-'}</td>
-                        <td class="td-id" style="color: #d858a3;">${g.id}</td>
-                        <td class="td-name">${g.name}</td>
-                        <td class="td-email">${g.email || '-'}</td>
-                        <td class="td-uuid">${g.uuid}</td>
-                        <td>
-                            <span class="badge ${g.status === 'checked_in' ? 'badge-checked-in' : 'badge-valid'}">
-                                ${g.status === 'checked_in' ? 'CHECKED IN' : 'VALID'}
-                            </span>
-                        </td>
-                        <td style="color:#78716c; font-size:13px;">${g.scan_timestamp ? formatDate(g.scan_timestamp) : '-'}</td>
-                    </tr>
-                `).join('');
+    function render() {
+        const tbody = document.getElementById('guest-tbody');
+        const start = (currentPage-1)*pageSize;
+        const page = filteredGuests.slice(start, start+pageSize);
+        if (!page.length) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:#555">Sin resultados.</td></tr>';
+        } else {
+            tbody.innerHTML = page.map(g => `
+                <tr>
+                    <td class="td-id">${g.id_consecutivo||'-'}</td>
+                    <td class="td-id" style="color:#d858a3">${g.id}</td>
+                    <td class="td-name">${g.name}</td>
+                    <td class="td-email">${g.email||'-'}</td>
+                    <td class="td-uuid">${(g.uuid||'').slice(0,12)}...</td>
+                    <td><span class="badge ${g.status==='checked_in'?'badge-checked-in':'badge-valid'}">${g.status==='checked_in'?'CHECKED IN':'VALID'}</span></td>
+                    <td style="color:#555;font-size:12px">${g.scan_timestamp?formatDate(g.scan_timestamp):'-'}</td>
+                </tr>`).join('');
+        }
+        const total = Math.ceil(filteredGuests.length/pageSize);
+        let pag = `<button class="pg-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+        for(let i=1;i<=total;i++) {
+            if(i<=2||i===total||Math.abs(i-currentPage)<=1) pag+=`<button class="pg-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+            else if(Math.abs(i-currentPage)===2) pag+=`<span style="color:#555;padding:0 2px">…</span>`;
+        }
+        pag+=`<button class="pg-btn" onclick="goPage(${currentPage+1})" ${currentPage>=total||total===0?'disabled':''}>›</button>`;
+        document.getElementById('pagination').innerHTML = pag;
+        const end = Math.min(start+pageSize, filteredGuests.length);
+        document.getElementById('showing-text').innerText = `MOSTRANDO ${filteredGuests.length>0?start+1:0}–${end} DE ${filteredGuests.length}`;
+    }
+
+    function goPage(p) {
+        const t = Math.ceil(filteredGuests.length/pageSize);
+        if(p<1||p>t) return;
+        currentPage=p;
+        render();
+        window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    function formatDate(ts) {
+        try { return new Date(ts).toLocaleString('es-MX'); } catch { return ts; }
+    }
+
+    function exportTableToCSV() {
+        const h = ['ID','Unique ID','Nombre','Correo','UUID','Status','Checked In'];
+        const r = filteredGuests.map(g => [g.id_consecutivo||'', g.id, `"${g.name}"`, g.email||'', g.uuid, g.status, g.scan_timestamp?formatDate(g.scan_timestamp):'']);
+        const csv = [h,...r].map(x=>x.join(',')).join('\n');
+        const a = Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([csv],{type:'text/csv'})),download:'invitados_mstch.csv'});
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+
+    async function resetDatabase() {
+        openModal({ icon:'delete_sweep', title:'Borrar Firestore', text:'Se eliminarán TODOS los invitados permanentemente.', confirmText:'SÍ, BORRAR',
+            onConfirm: async () => {
+                try {
+                    const res = await fetch('/api/guests/delete-all',{method:'DELETE'});
+                    const data = await res.json();
+                    openModal({icon:'check_circle',iconType:'success',title:'Completado',text:data.message,showCancel:false,confirmText:'ACEPTAR'});
+                    loadGuests();
+                } catch(e) { openModal({icon:'error',iconType:'error',title:'Error',text:e.message,showCancel:false,confirmText:'CERRAR'}); }
             }
+        });
+    }
 
-            // Pagination
-            const totalPages = Math.ceil(filteredGuests.length / pageSize);
-            let html = `<button class="pg-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹</button>`;
-            for (let i = 1; i <= totalPages; i++) {
-                if (i <= 2 || i === totalPages || Math.abs(i - currentPage) <= 1) {
-                    html += `<button class="pg-btn ${i === currentPage ? 'active' : ''}" onclick="goPage(${i})">${i}</button>`;
-                } else if (Math.abs(i - currentPage) === 2) {
-                    html += `<span style="color:#78716c; padding:0 4px;">...</span>`;
-                }
+    async function resetBucket() {
+        openModal({ icon:'cloud_off', title:'Borrar Bucket QRS', text:'Se eliminarán TODAS las imágenes QR del almacenamiento Cloud.', confirmText:'SÍ, BORRAR',
+            onConfirm: async () => {
+                try {
+                    const res = await fetch('/api/guests/delete-qrs-bucket',{method:'DELETE'});
+                    const data = await res.json();
+                    openModal({icon:'check_circle',iconType:'success',title:'Completado',text:data.message,showCancel:false,confirmText:'ACEPTAR'});
+                } catch(e) { openModal({icon:'error',iconType:'error',title:'Error',text:e.message,showCancel:false,confirmText:'CERRAR'}); }
             }
-            html += `<button class="pg-btn" onclick="goPage(${currentPage + 1})" ${currentPage >= totalPages || totalPages === 0 ? 'disabled' : ''}>›</button>`;
-            document.getElementById('pagination').innerHTML = html;
+        });
+    }
 
-            const end = Math.min(start + pageSize, filteredGuests.length);
-            document.getElementById('showing-text').innerText =
-                `MOSTRANDO ${filteredGuests.length > 0 ? start + 1 : 0}-${end} DE ${filteredGuests.length.toLocaleString()} ENTRADAS VERIFICADAS`;
-        }
-
-        function goPage(page) {
-            const totalPages = Math.ceil(filteredGuests.length / pageSize);
-            if (page < 1 || page > totalPages) return;
-            currentPage = page;
-            render();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function formatDate(ts) {
-            try {
-                const d = new Date(ts);
-                return d.toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' })
-                    + ' · ' + d.toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-            } catch { return ts; }
-        }
-
-        // ── EXPORT CSV ──
-        function exportTableToCSV() {
-            const headers = ['ID', 'Unique ID', 'Nombre', 'Correo', 'UUID', 'Status', 'Checked In'];
-            const rows = filteredGuests.map(g => [
-                g.id_consecutivo || '',
-                g.id,
-                `"${g.name}"`,
-                g.email || '',
-                g.uuid,
-                g.status,
-                g.scan_timestamp ? formatDate(g.scan_timestamp) : ''
-            ]);
-            const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'invitados_mstch.csv';
-            link.click();
-        }
-
-        // ── DANGER ACTIONS ──
-        async function resetDatabase() {
-            openModal({
-                icon: 'delete_sweep',
-                title: 'Borrar Firestore',
-                text: 'Esto borrará TODOS los invitados de Firestore de forma permanente. Esta acción no se puede deshacer.',
-                confirmText: 'SÍ, BORRAR',
-                onConfirm: async () => {
-                    try {
-                        const res = await fetch('/api/guests/delete-all', { method: 'DELETE' });
-                        const data = await res.json();
-                        openModal({ icon: 'check_circle', iconType: 'success', title: 'Completado', text: data.message, showCancel: false, confirmText: 'ACEPTAR' });
-                        loadGuests();
-                    } catch (e) {
-                        openModal({ icon: 'error', iconType: 'error', title: 'Error', text: e.message, showCancel: false, confirmText: 'CERRAR' });
-                    }
-                }
-            });
-        }
-
-        async function resetBucket() {
-            openModal({
-                icon: 'cloud_off',
-                title: 'Borrar Bucket QRS',
-                text: 'Esto borrará TODAS las imágenes QR del almacenamiento de Google Cloud. Esta acción no se puede deshacer.',
-                confirmText: 'SÍ, BORRAR',
-                onConfirm: async () => {
-                    try {
-                        const res = await fetch('/api/guests/delete-qrs-bucket', { method: 'DELETE' });
-                        const data = await res.json();
-                        openModal({ icon: 'check_circle', iconType: 'success', title: 'Completado', text: data.message, showCancel: false, confirmText: 'ACEPTAR' });
-                    } catch (e) {
-                        openModal({ icon: 'error', iconType: 'error', title: 'Error', text: e.message, showCancel: false, confirmText: 'CERRAR' });
-                    }
-                }
-            });
-        }
-
-        loadGuests();
-    </script>
+    loadGuests();
+</script>
 </body>
 </html>

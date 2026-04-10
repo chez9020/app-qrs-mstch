@@ -2,216 +2,90 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>Dashboard | MSTCH Digital</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <style>
-        .mstch-logo-complex {
-            display: flex;
-            justify-content: center;
-            padding: 50px 0 20px;
-            width: 100%;
-            z-index: 1000;
-        }
-        .main-wrapper {
-            max-width: 1184px;
-            margin: 0 auto;
-            padding: 0 48px 120px 48px;
-            display: flex;
-            flex-direction: column;
-            gap: 32px;
-        }
+        * { box-sizing:border-box; margin:0; padding:0; }
+        :root { --primary:#d858a3; --grad:linear-gradient(135deg,#d858a3 0%,#a02c6b 100%); --card:rgba(25,25,31,0.5); --border:rgba(255,255,255,0.1); }
+        html,body { width:100%; background:#000; color:#e5e2e1; font-family:'Inter',sans-serif; overflow-x:hidden; }
 
-        /* ── HEADER ── */
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 8px;
-        }
-        .header-text h1 { font-size: 48px; font-weight: 700; margin: 0 0 8px; line-height: 1; }
-        .header-text p { color: #a8a29e; font-size: 14px; max-width: 480px; margin: 0; }
+        .page { display:flex; flex-direction:column; width:100%; min-height:100vh; padding-bottom:90px; }
 
-        .date-picker-box {
-            text-align: right;
-        }
-        .date-picker-box label {
-            display: block;
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            color: white;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-        }
-        .date-input-wrap {
-            background: rgba(28, 27, 27, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 10px 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: white;
-            backdrop-filter: blur(10px);
-        }
+        .logo-bar { width:100%; display:flex; justify-content:center; padding:24px 16px 12px; }
+        .logo-bar img { height:64px; object-fit:contain; }
 
-        /* ── STATS ── */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
+        .page-header { padding:0 16px 20px; }
+        .system-tag { display:block; color:var(--primary); font-size:10px; letter-spacing:3px; text-transform:uppercase; font-weight:700; margin-bottom:6px; }
+        .page-header h1 { font-size:34px; font-weight:700; color:white; }
+        .page-header p { color:#78716c; font-size:13px; margin-top:6px; }
+
+        .content { padding:0 12px; display:flex; flex-direction:column; gap:14px; }
+
+        /* STATS */
+        .stats-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
         .stat-card {
-            background: rgba(25, 25, 31, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            padding: 32px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            backdrop-filter: blur(20px);
+            background:var(--card);
+            border:1px solid var(--border);
+            border-radius:18px;
+            padding:20px 16px;
+            display:flex; justify-content:space-between; align-items:center;
         }
-        .stat-info h2 {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            color: #a8a29e;
-            text-transform: uppercase;
-            margin-bottom: 12px;
-        }
-        .stat-info .value {
-            font-size: 48px;
-            font-weight: 700;
-            color: white;
-            line-height: 1;
-        }
-        .stat-icon {
-            width: 56px; height: 56px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            color: var(--primary-color);
-        }
+        .stat-label { font-size:10px; font-weight:700; letter-spacing:1.5px; color:#555; text-transform:uppercase; margin-bottom:8px; }
+        .stat-value { font-size:40px; font-weight:700; color:white; line-height:1; }
+        .stat-icon { width:44px; height:44px; background:rgba(216,88,163,0.1); border-radius:10px; display:flex; align-items:center; justify-content:center; color:var(--primary); flex-shrink:0; }
+        .stat-icon .material-icons-round { font-size:22px; }
 
-        /* ── RECENT LIST ── */
-        .section-title {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 24px;
-            font-weight: 700;
-            margin: 12px 0;
+        /* TABLE CARD */
+        .section-title { display:flex; align-items:center; gap:10px; font-size:20px; font-weight:700; margin:4px 0 10px; }
+        .section-title .material-icons-round { color:var(--primary); font-size:22px; }
+        .table-wrap {
+            background:var(--card);
+            border:1px solid var(--border);
+            border-radius:18px;
+            overflow:hidden;
         }
-        .section-title .material-icons-round { color: var(--primary-color); }
+        .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+        table { width:100%; border-collapse:collapse; min-width:320px; }
+        thead th { padding:14px 16px; text-align:left; font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#555; border-bottom:1px solid rgba(255,255,255,0.05); background:rgba(255,255,255,0.02); }
+        tbody td { padding:16px 16px; font-size:14px; font-weight:600; border-bottom:1px solid rgba(255,255,255,0.03); }
+        tbody tr:last-child td { border-bottom:none; }
+        tbody tr:hover { background:rgba(255,255,255,0.02); }
+        .table-footer { padding:12px 16px; background:rgba(0,0,0,0.2); font-size:9px; font-weight:700; letter-spacing:1px; color:#333; text-transform:uppercase; }
 
-        .table-card {
-            background: rgba(28, 27, 27, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-        }
-        .recent-table { width: 100%; border-collapse: collapse; }
-        .recent-table th {
-            padding: 16px 24px;
-            text-align: left;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            background: rgba(255, 255, 255, 0.02);
-        }
-        .recent-table td {
-            padding: 20px 24px;
-            font-size: 15px;
-            font-weight: 600;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-        }
-        .recent-table tr:hover { background: rgba(255,255,255,0.02); }
-
-        .footer-info {
-            padding: 16px 24px;
-            background: rgba(0,0,0,0.2);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .active-tag {
-            font-size: 9px; font-weight: 700; letter-spacing: 1px;
-            color: #78716c; text-transform: uppercase;
-        }
-        .pagination-dummy { display: flex; gap: 8px; }
-        .p-dot { width: 32px; height: 32px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 12px; color: #a8a29e; }
-        .p-dot.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
-
-        /* ── RESPONSIVE ── */
-        @media (max-width: 768px) {
-            .mstch-logo-complex {
-            display: flex;
-            justify-content: center;
-            padding: 50px 0 20px;
-            width: 100%;
-            z-index: 1000;
-        }
-            .mstch-logo-complex img { height: 40px; }
-            .dashboard-header { flex-direction: column; align-items: stretch; gap: 24px; }
-            .date-picker-box { text-align: left; }
-            .header-text h1 { font-size: 32px; }
-            .stats-grid { grid-template-columns: 1fr; gap: 12px; }
-            .stat-card { padding: 24px; }
-            .stat-info .value { font-size: 36px; }
-            .table-card { margin: 0 -8px; border-radius: 12px; overflow-x: auto; }
-            .recent-table { min-width: 400px; }
-            .section-title { font-size: 20px; }
-        }
+        /* NAV */
+        .nav-bar { display:flex; justify-content:space-around; align-items:center; padding:10px 8px; background:rgba(5,5,5,0.97); backdrop-filter:blur(12px); border-top:1px solid rgba(255,255,255,0.06); position:fixed; bottom:0; left:0; width:100%; z-index:1000; }
+        .nav-item { color:#555; text-decoration:none; font-size:8px; display:flex; flex-direction:column; align-items:center; gap:3px; text-transform:uppercase; letter-spacing:1px; flex:1; }
+        .nav-item .material-icons-round { font-size:20px; }
+        .nav-item.active { color:var(--primary); }
     </style>
 </head>
-<body class="bg-black">
+<body>
+<div class="page">
+    <div class="logo-bar"><img src="/static/img/logo.png" alt="MSTCH"></div>
 
-    <div class="mstch-logo-complex">
-        <img src="/static/img/logo.png" alt="MSTCH">
+    <div class="page-header">
+        <span class="system-tag">Sistema de Registro</span>
+        <h1>Dashboard</h1>
+        <p>Monitoreo en tiempo real del evento.</p>
     </div>
 
-    <div class="main-wrapper animate-fade-in">
-        
-        <div class="dashboard-header">
-            <div class="header-text">
-                <span class="system-tag">SISTEMA DE REGISTRO</span>
-                <h1>Dashboard</h1>
-                <p>Real-time surveillance and entry authorization for the private registry.</p>
-            </div>
-            <div class="date-picker-box">
-                <label>DESDE</label>
-                <div class="date-input-wrap">
-                    <span class="material-icons-round" style="color:var(--primary-color); font-size: 18px;">calendar_today</span>
-                    <span style="font-size: 13px; font-weight: 600;">12 OCT 2023</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="stats-grid">
+    <div class="content">
+        <div class="stats-row">
             <div class="stat-card">
-                <div class="stat-info">
-                    <h2>TOTAL INVITADOS</h2>
-                    <div class="value" id="total-guests">0</div>
+                <div>
+                    <div class="stat-label">Invitados</div>
+                    <div class="stat-value" id="total-guests">–</div>
                 </div>
-                <div class="stat-icon">
-                    <span class="material-icons-round">groups</span>
-                </div>
+                <div class="stat-icon"><span class="material-icons-round">groups</span></div>
             </div>
-
             <div class="stat-card">
-                <div class="stat-info">
-                    <h2>TOTAL INGRESADOS</h2>
-                    <div class="value" id="checked-in">0</div>
+                <div>
+                    <div class="stat-label">Ingresados</div>
+                    <div class="stat-value" id="checked-in">–</div>
                 </div>
-                <div class="stat-icon">
-                    <span class="material-icons-round">login</span>
-                </div>
+                <div class="stat-icon"><span class="material-icons-round">login</span></div>
             </div>
         </div>
 
@@ -220,63 +94,46 @@
                 <span class="material-icons-round">history</span>
                 Ingresos Recientes
             </div>
-            
-            <div class="table-card">
-                <table class="recent-table">
-                    <thead>
-                        <tr>
-                            <th>NOMBRE</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recent-list">
-                        <tr><td style="color:#78716c; text-align:center; padding:40px;">Cargando ingresos...</td></tr>
-                    </tbody>
-                </table>
-                <div class="footer-info">
-                    <div class="active-tag">SECURITY MONITORING ACTIVE ACROSS ALL GATES</div>
-                    <div class="pagination-dummy">
-                        <div class="p-dot active">1</div>
-                        <div class="p-dot">2</div>
-                    </div>
+            <div class="table-wrap">
+                <div class="table-scroll">
+                    <table>
+                        <thead><tr><th>Nombre</th></tr></thead>
+                        <tbody id="recent-list">
+                            <tr><td style="color:#555;text-align:center;padding:32px">Cargando...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
+                <div class="table-footer">Monitoreo activo en todos los accesos</div>
             </div>
         </div>
     </div>
+</div>
 
-    <nav class="nav-bar">
-        <a href="/" class="nav-item"><span class="material-icons-round">home</span>HOME</a>
-        <a href="/scanner" class="nav-item"><span class="material-icons-round">qr_code_scanner</span>ESCANEAR</a>
-        <a href="/dashboard" class="nav-item active"><span class="material-icons-round">dashboard</span>DASHBOARD</a>
-        <a href="/invitados" class="nav-item"><span class="material-icons-round">people</span>INVITADOS</a>
-        <a href="/capturas" class="nav-item"><span class="material-icons-round">photo_camera</span>INGRESOS</a>
-    </nav>
+<nav class="nav-bar">
+    <a href="/" class="nav-item"><span class="material-icons-round">home</span>HOME</a>
+    <a href="/scanner" class="nav-item"><span class="material-icons-round">qr_code_scanner</span>ESCANEAR</a>
+    <a href="/dashboard" class="nav-item active"><span class="material-icons-round">dashboard</span>DASHBOARD</a>
+    <a href="/invitados" class="nav-item"><span class="material-icons-round">people</span>INVITADOS</a>
+    <a href="/capturas" class="nav-item"><span class="material-icons-round">photo_camera</span>INGRESOS</a>
+</nav>
 
-    <script>
-        async function loadStats() {
-            try {
-                const response = await fetch('/api/guests/stats');
-                const data = await response.json();
-                
-                document.getElementById('total-guests').innerText = data.total_guests || 0;
-                document.getElementById('checked-in').innerText = data.checked_in_count || 0;
-                
-                const list = document.getElementById('recent-list');
-                if (!data.recent_checkins || data.recent_checkins.length === 0) {
-                    list.innerHTML = '<tr><td style="color:#78716c; text-align:center; padding:40px;">No hay ingresos hoy.</td></tr>';
-                } else {
-                    list.innerHTML = data.recent_checkins.map(g => `
-                        <tr>
-                            <td>${g.name}</td>
-                        </tr>
-                    `).join('');
-                }
-            } catch (error) {
-                console.error("Error cargando dashboard:", error);
+<script>
+    async function loadStats() {
+        try {
+            const res = await fetch('/api/guests/stats');
+            const data = await res.json();
+            document.getElementById('total-guests').innerText = data.total_guests ?? 0;
+            document.getElementById('checked-in').innerText = data.checked_in_count ?? 0;
+            const list = document.getElementById('recent-list');
+            if (!data.recent_checkins?.length) {
+                list.innerHTML = '<tr><td style="color:#555;text-align:center;padding:32px">Sin ingresos aún.</td></tr>';
+            } else {
+                list.innerHTML = data.recent_checkins.map(g => `<tr><td>${g.name}</td></tr>`).join('');
             }
-        }
-
-        setInterval(loadStats, 5000);
-        loadStats();
-    </script>
+        } catch(e) { console.error(e); }
+    }
+    loadStats();
+    setInterval(loadStats, 5000);
+</script>
 </body>
 </html>

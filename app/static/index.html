@@ -3,46 +3,239 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MSTCH Digital | QR-Access</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Manrope:wght@400;500;700&display=swap"
-        rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>MSTCH Digital | Registro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <style>
-        .mstch-logo-complex {
-            display: flex;
-            justify-content: center;
-            padding: 25px 0 10px;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --primary: #d858a3;
+            --grad: linear-gradient(135deg, #d858a3 0%, #a02c6b 100%);
+            --glow: rgba(216, 88, 163, 0.35);
+            --card: rgba(25, 25, 31, 0.5);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        html,
+        body {
             width: 100%;
-            z-index: 1000;
+            background: #000;
+            color: #e5e2e1;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
         }
 
-        .main-grid {
-            display: grid;
-            grid-template-columns: 501px 501px;
-            gap: 20px;
-        }
-
-        .upload-section-wide {
-            grid-column: span 2;
-            width: 1022px;
-        }
-
-        .header-section {
+        .page {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            align-items: center;
+            width: 100%;
+            min-height: 100vh;
+            padding-bottom: 90px;
         }
 
-        /* ── UPLOAD MODAL ── */
+        /* LOGO */
+        .logo-bar {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 24px 16px 12px;
+        }
+
+        .logo-bar img {
+            height: 64px;
+            object-fit: contain;
+        }
+
+        /* HEADER */
+        .page-header {
+            text-align: center;
+            padding: 0 16px 20px;
+            width: 100%;
+        }
+
+        .system-tag {
+            display: block;
+            color: var(--primary);
+            font-size: 10px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .page-header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            color: white;
+            line-height: 1;
+        }
+
+        .page-header p {
+            color: #78716c;
+            font-size: 13px;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        /* CARDS GRID */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            width: 100%;
+            padding: 0 15px;
+        }
+
+        .nav-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px 16px;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+            gap: 12px;
+        }
+
+        .nav-card:hover,
+        .nav-card:active {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        .card-icon {
+            width: 52px;
+            height: 52px;
+            background: rgba(216, 88, 163, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+
+        .card-icon .material-icons-round {
+            font-size: 26px;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+            text-align: center;
+        }
+
+        .card-sub {
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #555;
+            margin-top: 4px;
+        }
+
+        /* UPLOAD CARD */
+        .upload-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            width: 100%;
+            margin: 0 12px;
+        }
+
+        .upload-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .upload-card-header .card-icon {
+            margin: 0;
+        }
+
+        .upload-card-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .drop-zone {
+            width: 100%;
+            border: 1.5px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 14px;
+            padding: 32px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .drop-zone:hover {
+            border-color: var(--primary);
+        }
+
+        .drop-zone .material-icons-round {
+            font-size: 32px;
+            color: var(--primary);
+        }
+
+        .drop-zone span {
+            font-size: 13px;
+            font-weight: 700;
+            color: #e5e2e1;
+        }
+
+        .drop-zone small {
+            font-size: 11px;
+            color: #555;
+        }
+
+        .file-name-label {
+            font-size: 12px;
+            color: var(--primary);
+            margin-top: 8px;
+            display: none;
+        }
+
+        .btn-primary {
+            background: var(--grad);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 13px 28px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            margin-top: 16px;
+            align-self: flex-end;
+            box-shadow: 0 4px 14px var(--glow);
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+        }
+
+        /* MODAL */
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             background: rgba(0, 0, 0, 0.88);
             backdrop-filter: blur(14px);
             display: none;
@@ -57,89 +250,86 @@
         }
 
         .modal-card {
-            background: rgba(22, 21, 21, 0.98);
-            border: 1px solid rgba(216, 88, 163, 0.3);
+            background: rgba(18, 18, 24, 0.98);
+            border: 1px solid rgba(216, 88, 163, 0.25);
             border-radius: 24px;
             width: 100%;
-            max-width: 480px;
-            padding: 44px 40px;
+            max-width: 420px;
+            padding: 40px 32px;
             text-align: center;
-            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.7);
-            animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        @keyframes modalIn {
+        @keyframes popIn {
             from {
                 opacity: 0;
-                transform: scale(0.88) translateY(24px);
+                transform: scale(0.85) translateY(20px)
             }
 
             to {
                 opacity: 1;
-                transform: scale(1) translateY(0);
+                transform: scale(1)
             }
         }
 
-        .modal-icon-wrap {
+        .modal-icon {
             width: 72px;
             height: 72px;
             border-radius: 50%;
-            background: rgba(216, 88, 163, 0.12);
+            background: rgba(216, 88, 163, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 20px;
+            margin: 0 auto 18px;
         }
 
-        .modal-icon-wrap .material-icons-round {
+        .modal-icon .material-icons-round {
             font-size: 36px;
-            color: var(--primary-color);
+            color: var(--primary);
         }
 
-        .modal-icon-wrap.success {
-            background: rgba(52, 199, 89, 0.12);
+        .modal-icon.success {
+            background: rgba(52, 199, 89, 0.1);
         }
 
-        .modal-icon-wrap.success .material-icons-round {
+        .modal-icon.success .material-icons-round {
             color: #34c759;
         }
 
-        .modal-icon-wrap.fail {
-            background: rgba(255, 59, 48, 0.12);
+        .modal-icon.fail {
+            background: rgba(255, 59, 48, 0.1);
         }
 
-        .modal-icon-wrap.fail .material-icons-round {
+        .modal-icon.fail .material-icons-round {
             color: #ff3b30;
         }
 
         .modal-title {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 700;
-            color: #e5e2e1;
             margin-bottom: 8px;
         }
 
         .modal-text {
-            color: #a8a29e;
-            font-size: 14px;
+            color: #78716c;
+            font-size: 13px;
             line-height: 1.6;
-            margin-bottom: 28px;
+            margin-bottom: 24px;
         }
 
         .progress-track {
             background: rgba(255, 255, 255, 0.07);
             border-radius: 99px;
-            height: 6px;
+            height: 5px;
             overflow: hidden;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #d858a3, #f472c0);
-            border-radius: 99px;
-            width: 0%;
-            transition: width 0.4s ease;
+            background: var(--grad);
+            width: 0;
+            transition: width 0.4s;
         }
 
         .progress-fill.indeterminate {
@@ -149,129 +339,173 @@
 
         @keyframes slide {
             0% {
-                margin-left: -40%;
+                margin-left: -40%
             }
 
             100% {
-                margin-left: 100%;
+                margin-left: 100%
             }
         }
 
         .progress-label {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             letter-spacing: 1px;
-            color: #78716c;
+            color: #555;
             text-transform: uppercase;
         }
 
-        .btn-modal-ok {
-            background: var(--primary-color);
+        .btn-ok {
+            background: var(--grad);
             border: none;
             color: white;
-            padding: 13px 36px;
+            padding: 12px 32px;
             border-radius: 8px;
             font-weight: 700;
-            font-size: 11px;
+            font-size: 12px;
             letter-spacing: 1px;
             cursor: pointer;
-            margin-top: 24px;
-            font-family: var(--font-main);
-            transition: opacity 0.2s;
+            margin-top: 20px;
+            font-family: 'Inter', sans-serif;
+            display: none;
+            box-shadow: 0 4px 14px var(--glow);
         }
 
-        .btn-modal-ok:hover {
-            opacity: 0.85;
+        /* NAV */
+        .nav-bar {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 8px;
+            background: rgba(5, 5, 5, 0.97);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
         }
 
-        @media (max-width: 768px) {
-            .mstch-logo-complex {
-                display: flex;
-                justify-content: center;
-                padding: 25px 0 10px;
-                width: 100%;
-                z-index: 1000;
+        .nav-item {
+            color: #555;
+            text-decoration: none;
+            font-size: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            flex: 1;
+            transition: color 0.2s;
+        }
+
+        .nav-item .material-icons-round {
+            font-size: 20px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        @media (max-width:400px) {
+            .page-header h1 {
+                font-size: 28px;
             }
 
-            .mstch-logo-complex img {
-                height: 40px !important;
+            .cards-grid {
+                gap: 10px;
             }
 
-            .header-section {
-                text-align: center;
-                align-items: center;
+            .nav-card {
+                padding: 22px 12px;
+            }
+        }
+
+        @media (max-width:768px) {
+            .upload-section {
+                display: none;
             }
         }
     </style>
 </head>
 
-<body class="bg-black">
+<body>
+    <div class="page">
+        <div class="logo-bar"><img src="/static/img/logo.png" alt="MSTCH"></div>
 
-    <div class="mstch-logo-complex">
-        <img src="/static/img/logo.png" alt="MSTCH" style="height: 80px;">
-    </div>
+        <div class="page-header">
+            <span class="system-tag">Sistema de Registro</span>
+            <h1>Bienvenidos</h1>
+            <p>Registro y control de acceso para el evento privado.</p>
+        </div>
 
-    <!-- UPLOAD PROGRESS MODAL -->
-    <div class="modal-overlay" id="upload-modal">
-        <div class="modal-card">
-            <div class="modal-icon-wrap" id="upload-modal-icon-wrap">
-                <span class="material-icons-round" id="upload-modal-icon">cloud_upload</span>
+        <div class="cards-grid">
+            <a href="/scanner" class="nav-card">
+                <div class="card-icon"><span class="material-icons-round">qr_code_scanner</span></div>
+                <div>
+                    <div class="card-title">Escáner QR</div>
+                    <div class="card-sub">Acceso Rápido</div>
+                </div>
+            </a>
+            <a href="/dashboard" class="nav-card">
+                <div class="card-icon"><span class="material-icons-round">dashboard</span></div>
+                <div>
+                    <div class="card-title">Dashboard</div>
+                    <div class="card-sub">Analíticas</div>
+                </div>
+            </a>
+            <a href="/invitados" class="nav-card">
+                <div class="card-icon"><span class="material-icons-round">people</span></div>
+                <div>
+                    <div class="card-title">Invitados</div>
+                    <div class="card-sub">Lista Completa</div>
+                </div>
+            </a>
+            <a href="/capturas" class="nav-card">
+                <div class="card-icon"><span class="material-icons-round">photo_camera</span></div>
+                <div>
+                    <div class="card-title">Ingresos</div>
+                    <div class="card-sub">Capturas</div>
+                </div>
+            </a>
+        </div>
+
+        <div style="width:100%; padding:14px 12px 0;" class="upload-section">
+            <div class="upload-card">
+                <div class="upload-card-header">
+                    <div class="card-icon"><span class="material-icons-round">description</span></div>
+                    <h3>Cargar Invitados (CSV)</h3>
+                </div>
+                <div id="drop-zone" class="drop-zone" onclick="document.getElementById('csv-file').click()">
+                    <span class="material-icons-round">cloud_upload</span>
+                    <span>SELECCIONAR ARCHIVO</span>
+                    <small>Solo archivos .CSV</small>
+                </div>
+                <input type="file" id="csv-file" accept=".csv" style="display:none">
+                <p id="file-name" class="file-name-label"></p>
+                <div style="display:flex; justify-content:flex-end;">
+                    <button id="upload-btn" class="btn-primary">Subir</button>
+                </div>
             </div>
-            <div class="modal-title" id="upload-modal-title">Subiendo archivo...</div>
-            <div class="modal-text" id="upload-modal-text">Generando códigos QR y asignando IDs únicos.</div>
-            <div class="progress-track">
-                <div class="progress-fill indeterminate" id="progress-fill"></div>
-            </div>
-            <div class="progress-label" id="progress-label">PROCESANDO</div>
-            <button class="btn-modal-ok" id="upload-modal-ok" style="display:none;"
-                onclick="closeUploadModal()">ACEPTAR</button>
         </div>
     </div>
 
-    <div class="main-wrapper animate-fade-in">
-        <header class="header-section" style="margin-bottom: 20px;">
-            <span class="system-tag">SISTEMA DE REGISTRO</span>
-            <h1 style="font-size: 36px;">Bienvenidos</h1>
-            <p class="header-desc">Real-time surveillance and entry authorization for the private registry.</p>
-        </header>
-
-        <main class="main-grid">
-            <a href="/scanner" class="glass-card" style="height: 214px;">
-                <div class="card-icon-box">
-                    <span class="material-icons-round">qr_code_scanner</span>
-                </div>
-                <h3>Escáner QR</h3>
-                <span class="card-tag">Acceso Rápido</span>
-            </a>
-
-            <a href="/dashboard" class="glass-card" style="height: 214px;">
-                <div class="card-icon-box">
-                    <span class="material-icons-round">dashboard</span>
-                </div>
-                <h3>Dashboard</h3>
-                <span class="card-tag">Analíticas</span>
-            </a>
-
-            <div class="glass-card glass-card-wide upload-section-wide" style="height: 300px;">
-                <div class="header-section" style="margin-bottom: 0;">
-                    <span class="system-tag">GESTIÓN DE DATOS</span>
-                    <h3>Cargar invitados (CSV)</h3>
-                </div>
-
-                <div class="upload-area" id="drop-zone" onclick="document.getElementById('csv-file').click()"
-                    style="margin-top: 24px;">
-                    <span class="material-icons-round upload-icon">cloud_upload</span>
-                    <span class="upload-text">SELECCIONAR ARCHIVO</span>
-                    <span class="upload-sub">Solo archivos .CSV (Formato Ledger compatible)</span>
-                    <input type="file" id="csv-file" accept=".csv" style="display: none;">
-                </div>
-
-                <p id="file-name" style="margin-top: 8px; font-size: 12px; color: var(--primary-color); display: none;">
-                </p>
-                <button id="upload-btn" class="btn-upload"
-                    style="align-self: flex-end; margin-top: auto;">Subir</button>
+    <!-- MODAL -->
+    <div class="modal-overlay" id="upload-modal">
+        <div class="modal-card">
+            <div class="modal-icon" id="modal-icon-wrap">
+                <span class="material-icons-round" id="modal-icon">cloud_upload</span>
             </div>
-        </main>
+            <div class="modal-title" id="modal-title">Subiendo archivo...</div>
+            <div class="modal-text" id="modal-text">Generando QRs y asignando IDs únicos.</div>
+            <div class="progress-track">
+                <div class="progress-fill indeterminate" id="progress-fill"></div>
+            </div>
+            <div class="progress-label" id="progress-label">Procesando Invitados</div>
+            <button class="btn-ok" id="btn-ok" onclick="closeModal()">ACEPTAR</button>
+        </div>
     </div>
 
     <nav class="nav-bar">
@@ -284,80 +518,53 @@
 
     <script>
         const fileInput = document.getElementById('csv-file');
-        const fileNameDisplay = document.getElementById('file-name');
-        const uploadBtn = document.getElementById('upload-btn');
+        const fileLabel = document.getElementById('file-name');
+        const modal = document.getElementById('upload-modal');
 
         fileInput.addEventListener('change', () => {
             if (fileInput.files.length > 0) {
-                fileNameDisplay.textContent = '📎 ' + fileInput.files[0].name;
-                fileNameDisplay.style.display = 'block';
+                fileLabel.innerText = `✓ ${fileInput.files[0].name}`;
+                fileLabel.style.display = 'block';
             }
         });
 
-        // ── MODAL STATES ──
-        function showUploadModal() {
-            document.getElementById('upload-modal-icon-wrap').className = 'modal-icon-wrap';
-            document.getElementById('upload-modal-icon').innerText = 'cloud_upload';
-            document.getElementById('upload-modal-title').innerText = 'Subiendo archivo...';
-            document.getElementById('upload-modal-text').innerText = 'Generando códigos QR y asignando IDs únicos. Esto puede tardar unos segundos dependiendo del número de invitados.';
-            document.getElementById('progress-fill').className = 'progress-fill indeterminate';
-            document.getElementById('progress-label').innerText = 'PROCESANDO';
-            document.getElementById('upload-modal-ok').style.display = 'none';
-            document.getElementById('upload-modal').classList.add('visible');
-        }
-
-        function showUploadSuccess(count) {
-            document.getElementById('upload-modal-icon-wrap').className = 'modal-icon-wrap success';
-            document.getElementById('upload-modal-icon').innerText = 'check_circle';
-            document.getElementById('upload-modal-title').innerText = '¡Carga exitosa!';
-            document.getElementById('upload-modal-text').innerText = `Se procesaron ${count} invitados. Cada uno tiene su ID único de 6 dígitos, ID consecutivo y código QR generado.`;
-            document.getElementById('progress-fill').className = 'progress-fill';
-            document.getElementById('progress-fill').style.width = '100%';
-            document.getElementById('progress-label').innerText = 'COMPLETADO';
-            document.getElementById('upload-modal-ok').style.display = 'inline-block';
-        }
-
-        function showUploadError(msg) {
-            document.getElementById('upload-modal-icon-wrap').className = 'modal-icon-wrap fail';
-            document.getElementById('upload-modal-icon').innerText = 'error_outline';
-            document.getElementById('upload-modal-title').innerText = 'Error al cargar';
-            document.getElementById('upload-modal-text').innerText = msg || 'Ocurrió un error inesperado. Verifica que el archivo tenga la columna "name".';
-            document.getElementById('progress-fill').className = 'progress-fill';
-            document.getElementById('progress-fill').style.width = '0';
-            document.getElementById('progress-label').innerText = 'FALLIDO';
-            document.getElementById('upload-modal-ok').style.display = 'inline-block';
-        }
-
-        function closeUploadModal() {
-            document.getElementById('upload-modal').classList.remove('visible');
-        }
-
-        // ── UPLOAD ──
-        uploadBtn.addEventListener('click', async () => {
-            if (fileInput.files.length === 0) return;
-
-            showUploadModal();
-
+        document.getElementById('upload-btn').addEventListener('click', async () => {
+            if (!fileInput.files.length) { alert('Selecciona un archivo CSV primero.'); return; }
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
-
+            modal.classList.add('visible');
+            resetModal();
             try {
-                const response = await fetch('/api/guests/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    showUploadSuccess(Array.isArray(data) ? data.length : '?');
-                } else {
-                    const err = await response.json().catch(() => ({}));
-                    showUploadError(err.detail || 'Error del servidor.');
-                }
-            } catch (e) {
-                showUploadError(e.message);
-            }
+                const res = await fetch('/api/guests/upload', { method: 'POST', body: formData });
+                res.ok ? showSuccess() : showError('Error al procesar el archivo.');
+            } catch { showError('Error de conexión.'); }
         });
+
+        function resetModal() {
+            document.getElementById('modal-icon-wrap').className = 'modal-icon';
+            document.getElementById('modal-icon').innerText = 'cloud_upload';
+            document.getElementById('modal-title').innerText = 'Subiendo archivo...';
+            document.getElementById('modal-text').innerText = 'Generando QRs y asignando IDs únicos.';
+            document.getElementById('progress-fill').className = 'progress-fill indeterminate';
+            document.getElementById('btn-ok').style.display = 'none';
+        }
+        function showSuccess() {
+            document.getElementById('modal-icon-wrap').className = 'modal-icon success';
+            document.getElementById('modal-icon').innerText = 'check_circle';
+            document.getElementById('modal-title').innerText = '¡Carga Exitosa!';
+            document.getElementById('modal-text').innerText = 'Todos los invitados han sido registrados.';
+            document.getElementById('progress-fill').className = 'progress-fill';
+            document.getElementById('progress-fill').style.width = '100%';
+            document.getElementById('btn-ok').style.display = 'inline-block';
+        }
+        function showError(msg) {
+            document.getElementById('modal-icon-wrap').className = 'modal-icon fail';
+            document.getElementById('modal-icon').innerText = 'error';
+            document.getElementById('modal-title').innerText = 'Error en la carga';
+            document.getElementById('modal-text').innerText = msg;
+            document.getElementById('btn-ok').style.display = 'inline-block';
+        }
+        function closeModal() { modal.classList.remove('visible'); location.reload(); }
     </script>
 </body>
 
