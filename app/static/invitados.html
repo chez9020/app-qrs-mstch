@@ -220,11 +220,12 @@
             db.collection("guests").onSnapshot((querySnapshot) => {
                 const guests = [];
                 querySnapshot.forEach((doc) => {
-                    guests.push(doc.to_dict());
+                    guests.push(doc.data()); // Corregido: .data() en JS
                 });
 
                 // Actualizar datos globales
                 allGuests = guests;
+
                 // Mantener el orden por ID consecutivo
                 allGuests.sort((a,b) => parseInt(a.id_consecutivo||0) - parseInt(b.id_consecutivo||0));
                 
