@@ -161,7 +161,19 @@
         }
 
         .td-id { font-size: 14px; color: #a8a29e; font-weight: 600; }
-        .td-name { font-weight: 700; color: #e5e2e1; font-size: 15px; }
+        .td-name { 
+            font-weight: 700; color: #e5e2e1; font-size: 15px;
+            cursor: text;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .td-name:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        .td-name:focus {
+            background: rgba(255,255,255,0.1);
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3);
+        }
         .td-email { color: #a8a29e; }
 
         .qr-thumb {
@@ -387,7 +399,9 @@
                                 onchange="onCheckChange(this, '${g.uuid}')">
                         </td>
                         <td class="td-id">${g.id}</td>
-                        <td class="td-name">${g.name}</td>
+                        <td class="td-name" contenteditable="true" spellcheck="false" 
+                            onblur="saveGuestName('${g.uuid}', this.innerText, this)" 
+                            onkeydown="if(event.key === 'Enter') { event.preventDefault(); this.blur(); }">${g.name}</td>
                         <td class="td-email">${g.email || '-'}</td>
                         <td>
                             <a href="${g.qr_code_url}" target="_blank">
@@ -403,7 +417,55 @@
         }
 
         function escapeAttr(str) {
+            if (str === null || str === undefined) return '';
             return String(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        async function saveGuestName(uuid, newName, el) {
+            const originalName = allGuests.find(g => g.uuid === uuid).name;
+            const updatedName = newName.trim();
+            if(updatedName === originalName || updatedName === '') {
+                el.innerText = originalName;
+                return;
+            }
+            
+            try {
+                // feedback visual
+                el.style.opacity = '0.5';
+                
+                const res = await fetch(`/api/guests/${uuid}/name`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({name: updatedName})
+                });
+                
+                if(res.ok) {
+                    // Update in memory
+                    const g = allGuests.find(g => g.uuid === uuid);
+                    if(g) {
+                        g.name = updatedName;
+                    }
+                    const fg = filteredGuests.find(g => g.uuid === uuid);
+                    if(fg) {
+                        fg.name = updatedName;
+                    }
+                    
+                    // Usar el toast para avisar de la actualización
+                    const toast = document.getElementById('download-toast');
+                    const toastText = document.getElementById('toast-text');
+                    toast.classList.add('visible');
+                    toastText.innerHTML = `Nombre actualizado a <b>${escapeAttr(updatedName)}</b>`;
+                    setTimeout(() => toast.classList.remove('visible'), 2500);
+                } else {
+                    throw new Error('Error al actualizar en servidor');
+                }
+            } catch(e) {
+                console.error(e);
+                el.innerText = originalName; // revert
+                alert('No se pudo actualizar el nombre.');
+            } finally {
+                el.style.opacity = '1';
+            }
         }
 
         function onCheckChange(checkbox, uuid) {

@@ -58,7 +58,9 @@
         tbody tr:last-child td { border-bottom:none; }
         tbody tr:hover { background:rgba(255,255,255,0.02); }
         .td-id { color:var(--primary); font-weight:700; font-size:13px; }
-        .td-name { font-weight:600; }
+        .td-name { font-weight:600; cursor:text; outline:none; transition:all 0.2s; border-radius:4px; padding:4px 8px; border:1px solid transparent; }
+        .td-name:hover { background:rgba(255,255,255,0.05); }
+        .td-name:focus { background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.3); }
         .td-email { color:#555; font-size:12px; }
         .td-uuid { font-family:monospace; font-size:11px; color:#555; }
 
@@ -207,6 +209,39 @@
     }
     function closeModal() { document.getElementById('custom-modal').classList.remove('visible'); }
 
+    async function saveGuestName(uuid, newName, el) {
+        const originalName = allGuests.find(g => g.uuid === uuid).name;
+        const updatedName = newName.trim();
+        if(updatedName === originalName || updatedName === '') {
+            el.innerText = originalName;
+            return;
+        }
+        
+        try {
+            el.style.opacity = '0.5';
+            const res = await fetch(`/api/guests/${uuid}/name`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name: updatedName})
+            });
+            
+            if(res.ok) {
+                const g = allGuests.find(g => g.uuid === uuid);
+                if(g) g.name = updatedName;
+                const fg = filteredGuests.find(g => g.uuid === uuid);
+                if(fg) fg.name = updatedName;
+            } else {
+                throw new Error('Error en servidor');
+            }
+        } catch(e) {
+            console.error(e);
+            el.innerText = originalName;
+            openModal({icon:'error', iconType:'error', title:'Error', text:'No se pudo actualizar el nombre.', showCancel:false, confirmText:'CERRAR'});
+        } finally {
+            el.style.opacity = '1';
+        }
+    }
+
     async function loadGuests() {
         document.getElementById('guest-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:#555">Cargando...</td></tr>';
         try {
@@ -239,7 +274,9 @@
                 <tr>
                     <td class="td-id">${g.id_consecutivo||'-'}</td>
                     <td class="td-id" style="color:#d858a3">${g.id}</td>
-                    <td class="td-name">${g.name}</td>
+                    <td class="td-name" contenteditable="true" spellcheck="false" 
+                        onblur="saveGuestName('${g.uuid}', this.innerText, this)" 
+                        onkeydown="if(event.key === 'Enter') { event.preventDefault(); this.blur(); }">${g.name}</td>
                     <td class="td-email">${g.email||'-'}</td>
                     <td class="td-uuid">${(g.uuid||'').slice(0,12)}...</td>
                     <td><span class="badge ${g.status==='checked_in'?'badge-checked-in':'badge-valid'}">${g.status==='checked_in'?'CHECKED IN':'VALID'}</span></td>

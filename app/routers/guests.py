@@ -321,3 +321,23 @@ async def get_all_guests_from_db():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+class GuestUpdateRequest(BaseModel):
+    name: str
+
+@router.put("/{uuid}/name", response_model=dict)
+async def update_guest_name(uuid: str, body: GuestUpdateRequest):
+    try:
+        db = get_db()
+        doc_ref = db.collection(collection_name).document(uuid)
+        doc = doc_ref.get()
+        if not doc.exists:
+            raise HTTPException(status_code=404, detail="Guest not found")
+        
+        doc_ref.update({"name": body.name})
+        return {"status": "success", "message": "Name updated successfully"}
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
