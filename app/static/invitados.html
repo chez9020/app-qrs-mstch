@@ -64,9 +64,10 @@
         .td-email { color:#555; font-size:12px; }
         .td-uuid { font-family:monospace; font-size:11px; color:#555; }
 
-        .badge { display:inline-block; padding:3px 10px; border-radius:99px; font-size:9px; font-weight:800; letter-spacing:1px; }
-        .badge-valid { background:rgba(52,199,89,0.12); color:#34c759; }
-        .badge-checked-in { background:rgba(216,88,163,0.15); color:var(--primary); }
+        .status-select { background:transparent; border:1px solid rgba(255,255,255,0.2); outline:none; border-radius:99px; padding:3px 10px; font-size:9px; font-weight:800; letter-spacing:1px; cursor:pointer; font-family:inherit; transition:all 0.2s; text-align:center; }
+        .status-select.valid { background:rgba(52,199,89,0.12); color:#34c759; border-color:rgba(52,199,89,0.3); }
+        .status-select.checked-in { background:rgba(216,88,163,0.15); color:var(--primary); border-color:rgba(216,88,163,0.3); }
+        .status-select option { background:#111; color:#fff; }
 
         .table-footer { padding:12px 16px; background:rgba(0,0,0,0.2); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
         .showing-text { font-size:9px; font-weight:700; letter-spacing:1px; color:#555; text-transform:uppercase; }
@@ -242,6 +243,44 @@
         }
     }
 
+    async function saveGuestStatus(uuid, newStatus, el) {
+        const originalStatus = allGuests.find(g => g.uuid === uuid).status;
+        if(newStatus === originalStatus) return;
+        
+        try {
+            el.disabled = true;
+            el.style.opacity = '0.5';
+            
+            const res = await fetch(`/api/guests/${uuid}/status`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({status: newStatus})
+            });
+            
+            if(res.ok) {
+                const updateGuest = (g) => {
+                    if(!g) return;
+                    g.status = newStatus;
+                    if(newStatus === 'valid') delete g.scan_timestamp;
+                    else if(newStatus === 'checked_in') g.scan_timestamp = new Date().toISOString();
+                };
+                updateGuest(allGuests.find(g => g.uuid === uuid));
+                updateGuest(filteredGuests.find(g => g.uuid === uuid));
+                
+                render(); // Re-render to update the timestamp column appropriately
+            } else {
+                throw new Error('Error en servidor');
+            }
+        } catch(e) {
+            console.error(e);
+            el.value = originalStatus;
+            openModal({icon:'error', iconType:'error', title:'Error', text:'No se pudo actualizar estatus.', showCancel:false, confirmText:'CERRAR'});
+        } finally {
+            el.disabled = false;
+            el.style.opacity = '1';
+        }
+    }
+
     async function loadGuests() {
         document.getElementById('guest-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:#555">Cargando...</td></tr>';
         try {
@@ -279,7 +318,12 @@
                         onkeydown="if(event.key === 'Enter') { event.preventDefault(); this.blur(); }">${g.name}</td>
                     <td class="td-email">${g.email||'-'}</td>
                     <td class="td-uuid">${(g.uuid||'').slice(0,12)}...</td>
-                    <td><span class="badge ${g.status==='checked_in'?'badge-checked-in':'badge-valid'}">${g.status==='checked_in'?'CHECKED IN':'VALID'}</span></td>
+                    <td>
+                        <select class="status-select ${g.status==='checked_in'?'checked-in':'valid'}" onchange="saveGuestStatus('${g.uuid}', this.value, this)">
+                            <option value="valid" ${g.status==='valid'?'selected':''}>VALID</option>
+                            <option value="checked_in" ${g.status==='checked_in'?'selected':''}>CHECKED IN</option>
+                        </select>
+                    </td>
                     <td style="color:#555;font-size:12px">${g.scan_timestamp?formatDate(g.scan_timestamp):'-'}</td>
                 </tr>`).join('');
         }

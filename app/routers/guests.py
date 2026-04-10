@@ -340,4 +340,30 @@ async def update_guest_name(uuid: str, body: GuestUpdateRequest):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
+class GuestStatusUpdate(BaseModel):
+    status: str
 
+@router.put("/{uuid}/status", response_model=dict)
+async def update_guest_status(uuid: str, body: GuestStatusUpdate):
+    from google.cloud import firestore
+    try:
+        db = get_db()
+        doc_ref = db.collection(collection_name).document(uuid)
+        doc = doc_ref.get()
+        if not doc.exists:
+            raise HTTPException(status_code=404, detail="Guest not found")
+        
+        updates = {"status": body.status}
+        if body.status == "valid":
+            updates["scan_timestamp"] = firestore.DELETE_FIELD
+        elif body.status == "checked_in":
+            d = doc.to_dict()
+            if "scan_timestamp" not in d:
+                updates["scan_timestamp"] = datetime.now()
+                
+        doc_ref.update(updates)
+        return {"status": "success", "message": "Status updated successfully"}
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
