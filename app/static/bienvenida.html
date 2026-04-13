@@ -1,14 +1,20 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bienvenida | MSTCH Digital</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        body, html {
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body,
+        html {
             width: 100%;
             height: 100%;
             overflow: hidden;
@@ -33,7 +39,7 @@
         .overlay {
             position: fixed;
             inset: 0;
-            background: radial-gradient(circle at center, rgba(216, 88, 163, 0.1) 0%, rgba(0,0,0,0.4) 100%);
+            background: radial-gradient(circle at center, rgba(216, 88, 163, 0.1) 0%, rgba(0, 0, 0, 0.4) 100%);
             z-index: 0;
         }
 
@@ -84,7 +90,7 @@
             background: linear-gradient(135deg, #fff 0%, #d858a3 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            text-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
         }
 
         .mstch-logo {
@@ -103,17 +109,19 @@
         }
     </style>
 </head>
+
 <body>
 
     <video id="bg-video" class="video-background" autoplay muted loop playsinline>
-        <source src="/static/video/fondo.mp4" type="video/mp4">
+        <source src="https://storage.googleapis.com/shaq-invitaciones-bucket/videos_fondo/REGISTRO_1400x800.mp4"
+            type="video/mp4">
     </video>
 
     <div class="overlay"></div>
 
     <div class="container">
         <img src="/static/img/logo.png" class="mstch-logo" alt="MSTCH">
-        
+
         <div class="welcome-card" id="welcome-card">
             <span class="tag" id="welcome-tag">¡BIENVENIDO!</span>
             <h1 class="guest-name" id="display-name">USUARIO</h1>
@@ -142,7 +150,7 @@
 
         const card = document.getElementById('welcome-card');
         const nameEl = document.getElementById('display-name');
-        
+
         let checkedInIds = new Set();
         let isFirstLoad = true;
         let queue = [];
@@ -154,11 +162,11 @@
                 if (change.type === "added" || change.type === "modified") {
                     const data = change.doc.data();
                     const id = change.doc.id;
-                    
+
                     // Si el estatus es 'checked_in' y es una transición nueva
                     if (data.status === 'checked_in' && !checkedInIds.has(id)) {
                         checkedInIds.add(id);
-                        
+
                         // En la primera carga no disparamos bienvenidas masivas
                         if (!isFirstLoad) {
                             queue.push(data.name);
@@ -175,28 +183,29 @@
 
         function processQueue() {
             if (isShowing || queue.length === 0) return;
-            
+
             isShowing = true;
             const name = queue.shift();
-            
+
             // Actualizar nombre
             nameEl.innerText = name.toUpperCase();
-            
+
             // Mostrar animación
             card.classList.add('visible');
-            
+
             // Tiempo en pantalla (6 segundos)
             setTimeout(() => {
                 card.classList.remove('visible');
-                
+
                 // Esperar a que termine de desvanecerse para mostrar el siguiente
                 setTimeout(() => {
                     isShowing = false;
                     processQueue();
                 }, 1000);
-                
+
             }, 6000);
         }
     </script>
 </body>
+
 </html>
