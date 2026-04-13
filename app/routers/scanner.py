@@ -53,7 +53,8 @@ async def validate_guest(scan: ScanRequest):
         # Check in the guest
         doc_ref.update({
             "status": GuestStatus.CHECKED_IN.value,
-            "scan_timestamp": timestamp
+            "scan_timestamp": timestamp,
+            "last_welcome_timestamp": timestamp
         })
         
         return {
@@ -64,6 +65,11 @@ async def validate_guest(scan: ScanRequest):
         }
     
     elif current_status == GuestStatus.CHECKED_IN.value:
+        # Aunque ya entró, actualizamos el timestamp para que la pantalla de bienvenida lo detecte
+        doc_ref.update({
+            "last_welcome_timestamp": timestamp
+        })
+
         return JSONResponse(
             status_code=409,
             content={

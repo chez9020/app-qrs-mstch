@@ -147,7 +147,7 @@
         const card = document.getElementById('welcome-card');
         const nameEl = document.getElementById('display-name');
 
-        let checkedInIds = new Set();
+        let lastWelcomeTimes = new Map();
         let isFirstLoad = true;
         let queue = [];
         let isShowing = false;
@@ -155,22 +155,26 @@
         // Listener en tiempo real
         db.collection("guests").onSnapshot((snapshot) => {
             snapshot.docChanges().forEach((change) => {
-                if (change.type === "added" || change.type === "modified") {
-                    const data = change.doc.data();
-                    const id = change.doc.id;
+                const data = change.doc.data();
+                const id = change.doc.id;
+                
+                // Convertir Timestamp de Firebase a milisegundos para comparar
+                let currentTs = 0;
+                if (data.last_welcome_timestamp) {
+                    currentTs = data.last_welcome_timestamp.toDate ? 
+                                data.last_welcome_timestamp.toDate().getTime() : 
+                                new Date(data.last_welcome_timestamp).getTime();
+                }
 
-                    // Si el estatus es 'checked_in' y es una transición nueva
-                    if (data.status === 'checked_in' && !checkedInIds.has(id)) {
-                        checkedInIds.add(id);
-
-                        // En la primera carga no disparamos bienvenidas masivas
-                        if (!isFirstLoad) {
-                            queue.push(data.name);
-                            processQueue();
-                        }
-                    } else if (data.status === 'valid') {
-                        // Si se reinicia el estatus, lo quitamos de los ya entrados
-                        checkedInIds.delete(id);
+                if (isFirstLoad) {
+                    // En la carga inicial solo guardamos el estado actual sin disparar nada
+                    if (currentTs) lastWelcomeTimes.set(id, currentTs);
+                } else {
+                    // Si el timestamp cambió (y existe), disparamos la bienvenida en pantalla
+                    if (currentTs && currentTs !== lastWelcomeTimes.get(id)) {
+                        lastWelcomeTimes.set(id, currentTs);
+                        queue.push(data.name);
+                        processQueue();
                     }
                 }
             });
