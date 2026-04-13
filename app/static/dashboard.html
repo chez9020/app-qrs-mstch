@@ -117,23 +117,61 @@
     <a href="/capturas" class="nav-item"><span class="material-icons-round">photo_camera</span>INGRESOS</a>
 </nav>
 
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 <script>
-    async function loadStats() {
-        try {
-            const res = await fetch('/api/guests/stats');
-            const data = await res.json();
-            document.getElementById('total-guests').innerText = data.total_guests ?? 0;
-            document.getElementById('checked-in').innerText = data.checked_in_count ?? 0;
-            const list = document.getElementById('recent-list');
-            if (!data.recent_checkins?.length) {
-                list.innerHTML = '<tr><td style="color:#555;text-align:center;padding:32px">Sin ingresos aún.</td></tr>';
+    // Configuración de Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyC-1fl9GwYuNCs73BIL45iIZTu5V5k5Y6E",
+        authDomain: "shaq-brand-bot.firebaseapp.com",
+        projectId: "shaq-brand-bot",
+        storageBucket: "shaq-brand-bot.firebasestorage.app",
+        messagingSenderId: "612926027116",
+        appId: "1:612926027116:web:1cee7d950033c3f7faaf49"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    function startRealtimeDashboard() {
+        const totalEl = document.getElementById('total-guests');
+        const checkedEl = document.getElementById('checked-in');
+        const listEl = document.getElementById('recent-list');
+
+        db.collection("guests").onSnapshot((querySnapshot) => {
+            const guests = [];
+            querySnapshot.forEach((doc) => {
+                guests.push(doc.data());
+            });
+
+            const total = guests.length;
+            const checkedIn = guests.filter(g => g.status === 'checked_in');
+            const checkedInCount = checkedIn.length;
+
+            const recent = checkedIn
+                .filter(g => g.scan_timestamp)
+                .sort((a, b) => {
+                    const dateA = a.scan_timestamp.toDate ? a.scan_timestamp.toDate() : new Date(a.scan_timestamp);
+                    const dateB = b.scan_timestamp.toDate ? b.scan_timestamp.toDate() : new Date(b.scan_timestamp);
+                    return dateB - dateA;
+                })
+                .slice(0, 10);
+
+            totalEl.innerText = total;
+            checkedEl.innerText = checkedInCount;
+
+            if (recent.length === 0) {
+                listEl.innerHTML = '<tr><td style="color:#555;text-align:center;padding:32px">Sin ingresos aún.</td></tr>';
             } else {
-                list.innerHTML = data.recent_checkins.map(g => `<tr><td>${g.name}</td></tr>`).join('');
+                listEl.innerHTML = recent.map(g => `<tr><td>${g.name}</td></tr>`).join('');
             }
-        } catch(e) { console.error(e); }
+        }, (error) => {
+            console.error("Error en dashboard real-time:", error);
+        });
     }
-    loadStats();
-    setInterval(loadStats, 5000);
+    startRealtimeDashboard();
 </script>
 </body>
 </html>
