@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenida | MSTCH Digital</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Inter', sans-serif;
+            color: white;
+        }
+
+        /* VIDEO BACKGROUND */
+        .video-background {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            min-width: 100%;
+            min-height: 100%;
+            z-index: -1;
+            object-fit: cover;
+            filter: brightness(0.6);
+        }
+
+        /* OVERLAY GRADIENT */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(216, 88, 163, 0.1) 0%, rgba(0,0,0,0.4) 100%);
+            z-index: 0;
+        }
+
+        /* WELCOME CARD CONTAINER */
+        .container {
+            position: relative;
+            z-index: 10;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* ANIMATED TEXT */
+        .welcome-card {
+            opacity: 0;
+            transform: translateY(30px) scale(0.9);
+            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 90%;
+        }
+
+        .welcome-card.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .tag {
+            color: #d858a3;
+            font-size: 1.5vw;
+            text-transform: uppercase;
+            letter-spacing: 8px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(216, 88, 163, 0.5);
+        }
+
+        .guest-name {
+            font-size: 7vw;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #fff 0%, #d858a3 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        .mstch-logo {
+            position: absolute;
+            top: 50px;
+            height: 80px;
+            opacity: 0.8;
+        }
+
+        /* LOGO MSTCH IN CORNER */
+        .corner-logo {
+            position: absolute;
+            bottom: 40px;
+            height: 40px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+
+    <video id="bg-video" class="video-background" autoplay muted loop playsinline>
+        <source src="/static/video/fondo.mp4" type="video/mp4">
+    </video>
+
+    <div class="overlay"></div>
+
+    <div class="container">
+        <img src="/static/img/logo.png" class="mstch-logo" alt="MSTCH">
+        
+        <div class="welcome-card" id="welcome-card">
+            <span class="tag" id="welcome-tag">¡BIENVENIDO!</span>
+            <h1 class="guest-name" id="display-name">USUARIO</h1>
+        </div>
+
+        <img src="/static/img/logo.png" class="corner-logo" alt="MSTCH">
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyC-1fl9GwYuNCs73BIL45iIZTu5V5k5Y6E",
+            authDomain: "shaq-brand-bot.firebaseapp.com",
+            projectId: "shaq-brand-bot",
+            storageBucket: "shaq-brand-bot.firebasestorage.app",
+            messagingSenderId: "612926027116",
+            appId: "1:612926027116:web:1cee7d950033c3f7faaf49"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const card = document.getElementById('welcome-card');
+        const nameEl = document.getElementById('display-name');
+        
+        let checkedInIds = new Set();
+        let isFirstLoad = true;
+        let queue = [];
+        let isShowing = false;
+
+        // Listener en tiempo real
+        db.collection("guests").onSnapshot((snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added" || change.type === "modified") {
+                    const data = change.doc.data();
+                    const id = change.doc.id;
+                    
+                    // Si el estatus es 'checked_in' y es una transición nueva
+                    if (data.status === 'checked_in' && !checkedInIds.has(id)) {
+                        checkedInIds.add(id);
+                        
+                        // En la primera carga no disparamos bienvenidas masivas
+                        if (!isFirstLoad) {
+                            queue.push(data.name);
+                            processQueue();
+                        }
+                    } else if (data.status === 'valid') {
+                        // Si se reinicia el estatus, lo quitamos de los ya entrados
+                        checkedInIds.delete(id);
+                    }
+                }
+            });
+            isFirstLoad = false;
+        });
+
+        function processQueue() {
+            if (isShowing || queue.length === 0) return;
+            
+            isShowing = true;
+            const name = queue.shift();
+            
+            // Actualizar nombre
+            nameEl.innerText = name.toUpperCase();
+            
+            // Mostrar animación
+            card.classList.add('visible');
+            
+            // Tiempo en pantalla (6 segundos)
+            setTimeout(() => {
+                card.classList.remove('visible');
+                
+                // Esperar a que termine de desvanecerse para mostrar el siguiente
+                setTimeout(() => {
+                    isShowing = false;
+                    processQueue();
+                }, 1000);
+                
+            }, 6000);
+        }
+    </script>
+</body>
+</html>
