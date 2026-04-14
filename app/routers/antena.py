@@ -1,13 +1,18 @@
 from fastapi import APIRouter, HTTPException
 from typing import List
-from app.services.db import get_db
+from google.cloud import firestore
+import os
 
 router = APIRouter(prefix="/api/antena", tags=["Antena"])
 
 @router.get("/logs")
 async def get_access_logs():
     try:
-        db = get_db()
+        # Aquí forzamos la conexión específicamente a la base de datos "bristol-db",
+        # ya que la app por defecto se conecta a la principal "(default)"
+        project_id = os.getenv('GOOGLE_CLOUD_PROJECT', 'shaq-brand-bot')
+        db = firestore.Client(project=project_id, database="bristol-db")
+        
         logs_ref = db.collection("access_logs")
         docs = logs_ref.order_by("Timestamp", direction="DESCENDING").stream()
         
