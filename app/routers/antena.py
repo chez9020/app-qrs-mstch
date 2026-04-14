@@ -27,3 +27,27 @@ async def get_access_logs():
         return logs
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/logs/delete-all")
+async def delete_all_logs():
+    try:
+        project_id = os.getenv('GOOGLE_CLOUD_PROJECT', 'shaq-brand-bot')
+        db = firestore.Client(project=project_id, database="bristol-db")
+        logs_ref = db.collection("access_logs")
+        docs = logs_ref.stream()
+        
+        deleted_count = 0
+        batch = db.batch()
+        
+        for doc in docs:
+            batch.delete(doc.reference)
+            deleted_count += 1
+            # Firestore batch limit is 500
+            if deleted_count % 500 == 0:
+                batch.commit()
+                batch = db.batch()
+        
+        batch.commit()
+        return {"status": "success", "message": f"Se borraron {deleted_count} registros."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -113,6 +113,27 @@
             margin-bottom: 16px;
         }
 
+        .action-card {
+            background: var(--surface-color);
+            transition: all 0.2s;
+            border: 1px solid var(--border-color);
+            color: white;
+            font-family: inherit;
+        }
+        
+        button.action-card {
+            padding: 24px;
+        }
+
+        .action-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .action-card:active {
+            transform: translateY(0);
+        }
+
         .stat-value {
             font-size: 36px;
             font-weight: 700;
@@ -261,13 +282,21 @@
                 <div class="stat-label">Total de Registros Captados</div>
             </div>
             
-            <div class="stat-card" style="--primary-color: #3b82f6; --primary-light: #60a5fa;">
-                <div class="stat-icon" style="color: var(--primary-light); background: rgba(59, 130, 246, 0.15);">
-                    <span class="material-icons-round">router</span>
+            <button class="stat-card action-card" onclick="window.downloadCSV()" style="--primary-color: #10B981; --primary-light: #34D399; cursor: pointer; text-align: left;">
+                <div class="stat-icon" style="color: var(--primary-light); background: rgba(16, 185, 129, 0.15);">
+                    <span class="material-icons-round">download</span>
                 </div>
-                <div class="stat-value">Activa</div>
-                <div class="stat-label">Estado de la Antena</div>
-            </div>
+                <div class="stat-value" style="font-size: 24px;">Descargar CSV</div>
+                <div class="stat-label">Exportar lista de accesos</div>
+            </button>
+            
+            <button class="stat-card action-card" onclick="window.confirmReset()" style="--primary-color: #EF4444; --primary-light: #F87171; cursor: pointer; text-align: left;">
+                <div class="stat-icon" style="color: var(--primary-light); background: rgba(239, 68, 68, 0.15);">
+                    <span class="material-icons-round">delete_sweep</span>
+                </div>
+                <div class="stat-value" style="font-size: 24px;">Reiniciar Logs</div>
+                <div class="stat-label">Borrar todos de la BD</div>
+            </button>
         </div>
 
         <div class="table-container">
@@ -295,11 +324,59 @@
                 </tbody>
             </table>
         </div>
-    </div>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
         import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+        // Global functions for buttons
+        window.downloadCSV = function() {
+            const table = document.getElementById('logs-table');
+            let csv = [];
+            const rows = table.querySelectorAll('tr');
+            
+            for (let i = 0; i < rows.length; i++) {
+                let row = [], cols = rows[i].querySelectorAll('td, th');
+                
+                // If it's the loading or empty state, don't download
+                if (cols.length === 1 && cols[0].hasAttribute('colspan')) continue;
+
+                for (let j = 0; j < cols.length; j++) {
+                    let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, '').trim();
+                    data = data.replace(/"/g, '""');
+                    row.push('"' + data + '"');
+                }
+                if (row.length > 0) csv.push(row.join(','));
+            }
+
+            if (csv.length <= 1) {
+                alert("No hay registros para descargar.");
+                return;
+            }
+
+            const csvFile = new Blob([csv.join('\\n')], {type: 'text/csv;charset=utf-8;'});
+            const downloadLink = document.createElement('a');
+            downloadLink.download = 'Accesos_Antena.csv';
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = 'none';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        };
+
+        window.confirmReset = async function() {
+            if(confirm("¿Estás 100% seguro de reiniciar el conteo? Esto borrará todos los registros de la antena de forma irreversible.")) {
+                try {
+                    const res = await fetch('/api/antena/logs/delete-all', {
+                        method: 'DELETE'
+                    });
+                    if (!res.ok) throw new Error('Error al borrar');
+                    alert("Registros eliminados correctamente.");
+                    // Firebase onSnapshot limpiará la tabla automáticamente
+                } catch (error) {
+                    alert('Hubo un error al intentar borrar los registros.');
+                }
+            }
+        };
 
         // Configuración de Firebase
         const firebaseConfig = {
