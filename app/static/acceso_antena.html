@@ -256,9 +256,122 @@
             margin-bottom: 16px;
             opacity: 0.5;
         }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: #1a1f2e;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 20px;
+            padding: 36px;
+            max-width: 440px;
+            width: 90%;
+            text-align: center;
+            animation: modalIn 0.25s ease-out;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.92) translateY(10px); }
+            to   { opacity: 1; transform: scale(1)   translateY(0); }
+        }
+
+        .modal-icon {
+            background: rgba(239, 68, 68, 0.12);
+            color: #F87171;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+
+        .modal-icon .material-icons-round {
+            font-size: 32px;
+        }
+
+        .modal h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0 0 10px;
+            color: white;
+        }
+
+        .modal p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin: 0 0 28px;
+            line-height: 1.6;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel {
+            background: rgba(255,255,255,0.06);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-cancel:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .btn-danger {
+            background: #EF4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #DC2626;
+        }
     </style>
 </head>
 <body>
+
+    <!-- Modal de confirmación de reinicio -->
+    <div class="modal-overlay" id="reset-modal">
+        <div class="modal">
+            <div class="modal-icon">
+                <span class="material-icons-round">warning_amber</span>
+            </div>
+            <h3>¿Reiniciar conteo?</h3>
+            <p>Esta acción borrará <strong>todos los registros</strong> de la antena de forma irreversible. No podrás recuperarlos.</p>
+            <div class="modal-actions">
+                <button class="btn btn-cancel" onclick="closeResetModal()">Cancelar</button>
+                <button class="btn btn-danger" id="btn-confirm-reset">Sí, reiniciar</button>
+            </div>
+        </div>
+    </div>
 
     <nav class="navbar">
         <a href="/dashboard" class="navbar-brand">
@@ -363,20 +476,29 @@
             document.body.removeChild(downloadLink);
         };
 
-        window.confirmReset = async function() {
-            if(confirm("¿Estás 100% seguro de reiniciar el conteo? Esto borrará todos los registros de la antena de forma irreversible.")) {
-                try {
-                    const res = await fetch('/api/antena/logs/delete-all', {
-                        method: 'DELETE'
-                    });
-                    if (!res.ok) throw new Error('Error al borrar');
-                    alert("Registros eliminados correctamente.");
-                    // Firebase onSnapshot limpiará la tabla automáticamente
-                } catch (error) {
-                    alert('Hubo un error al intentar borrar los registros.');
-                }
-            }
+        window.confirmReset = function() {
+            document.getElementById('reset-modal').classList.add('active');
         };
+
+        window.closeResetModal = function() {
+            document.getElementById('reset-modal').classList.remove('active');
+        };
+
+        // Cerrar al hacer click fuera
+        document.getElementById('reset-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeResetModal();
+        });
+
+        document.getElementById('btn-confirm-reset').addEventListener('click', async function() {
+            closeResetModal();
+            try {
+                const res = await fetch('/api/antena/logs/delete-all', { method: 'DELETE' });
+                if (!res.ok) throw new Error('Error al borrar');
+                // Firebase onSnapshot limpiará la tabla automáticamente
+            } catch (error) {
+                console.error('Hubo un error al intentar borrar los registros.', error);
+            }
+        });
 
         // Configuración de Firebase
         const firebaseConfig = {
