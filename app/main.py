@@ -42,5 +42,6 @@ async def read_descarga_qrs(request: Request):
 async def read_capturas(request: Request):
     return templates.TemplateResponse(request=request, name="capturas.html")
 @app.get("/bienvenida")
+
 async def read_bienvenida(request: Request):
     return templates.TemplateResponse(request=request, name="bienvenida.html")

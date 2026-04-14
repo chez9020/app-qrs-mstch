@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso RFID | MSTCH Digital</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0B0E14;
+            --surface-color: #171C26;
+            --surface-color-light: #202736;
+            --primary-color: #8A51B0;
+            --primary-light: #B771E5;
+            --text-primary: #FFFFFF;
+            --text-secondary: #94A3B8;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --success-color: #10B981;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: var(--surface-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: white;
+            text-decoration: none;
+        }
+
+        .navbar-brand .material-icons-round {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 28px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin: 0 0 8px 0;
+            font-weight: 600;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary-color), var(--primary-light));
+        }
+
+        .stat-icon {
+            align-self: flex-start;
+            background: rgba(138, 81, 176, 0.15);
+            color: var(--primary-light);
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin: 0 0 4px 0;
+            line-height: 1;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Table Container */
+        .table-container {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .table-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .btn-refresh {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-refresh:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-refresh .material-icons-round {
+            font-size: 18px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr {
+            transition: background-color 0.2s;
+        }
+
+        tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state .material-icons-round {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="/dashboard" class="navbar-brand">
+            <span class="material-icons-round">sensors</span>
+            MSTCH Digital | Antena RFID
+        </a>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1>Monitor de Acceso</h1>
+            <p>Registro en tiempo real de asistencias mediante sistema de antena</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <span class="material-icons-round">how_to_reg</span>
+                </div>
+                <div class="stat-value" id="total-registros">0</div>
+                <div class="stat-label">Total de Registros Captados</div>
+            </div>
+            
+            <div class="stat-card" style="--primary-color: #3b82f6; --primary-light: #60a5fa;">
+                <div class="stat-icon" style="color: var(--primary-light); background: rgba(59, 130, 246, 0.15);">
+                    <span class="material-icons-round">router</span>
+                </div>
+                <div class="stat-value">Activa</div>
+                <div class="stat-label">Estado de la Antena</div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="table-header">
+                <h2>Últimos Accesos</h2>
+                <button class="btn-refresh" onclick="loadData()">
+                    <span class="material-icons-round">refresh</span>
+                    Actualizar
+                </button>
+            </div>
+            
+            <table id="logs-table">
+                <thead>
+                    <tr>
+                        <th>Nombre / Asistente</th>
+                        <th>EPCID (Tag RFID)</th>
+                        <th>Estado / Equipo</th>
+                        <th>Hora de Registro</th>
+                    </tr>
+                </thead>
+                <tbody id="logs-body">
+                    <tr>
+                        <td colspan="4" class="loading">Cargando registros...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Formateador de fechas
+        function formatDate(dateStr) {
+            if (!dateStr) return 'N/A';
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleString('es-MX', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: true
+                });
+            } catch (e) {
+                return dateStr;
+            }
+        }
+
+        async function loadData() {
+            const tbody = document.getElementById('logs-body');
+            tbody.innerHTML = '<tr><td colspan="4" class="loading">Cargando registros...</td></tr>';
+
+            try {
+                const res = await fetch('/api/antena/logs');
+                if (!res.ok) throw new Error('Error de red');
+                const data = await res.json();
+
+                document.getElementById('total-registros').textContent = data.length;
+
+                if (data.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="4">
+                                <div class="empty-state">
+                                    <span class="material-icons-round">inbox</span>
+                                    <h3>No hay registros</h3>
+                                    <p>Aún no se ha detectado ningún acceso por antena.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                data.forEach(log => {
+                    const tr = document.createElement('tr');
+                    
+                    const nameCell = document.createElement('td');
+                    nameCell.style.fontWeight = '500';
+                    nameCell.textContent = log.Nombre || 'Desconocido';
+                    
+                    const epcCell = document.createElement('td');
+                    epcCell.style.fontFamily = 'monospace';
+                    epcCell.style.color = 'var(--text-secondary)';
+                    epcCell.textContent = log.EPCID || '-';
+                    
+                    const statusCell = document.createElement('td');
+                    const badge = document.createElement('span');
+                    badge.className = 'badge badge-success';
+                    badge.textContent = log.Equipo || 'Registrado';
+                    statusCell.appendChild(badge);
+                    
+                    const timeCell = document.createElement('td');
+                    timeCell.textContent = formatDate(log.Timestamp);
+
+                    tr.appendChild(nameCell);
+                    tr.appendChild(epcCell);
+                    tr.appendChild(statusCell);
+                    tr.appendChild(timeCell);
+                    
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error(error);
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="loading" style="color: #ef4444;">
+                            Error al cargar los datos. Intenta nuevamente.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Cargar datos al inicio
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
