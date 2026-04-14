@@ -297,12 +297,30 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyC-1fl9GwYuNCs73BIL45iIZTu5V5k5Y6E",
+            authDomain: "shaq-brand-bot.firebaseapp.com",
+            projectId: "shaq-brand-bot",
+            storageBucket: "shaq-brand-bot.firebasestorage.app",
+            messagingSenderId: "612926027116",
+            appId: "1:612926027116:web:1cee7d950033c3f7faaf49"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        // Important: connecting explicitly to 'bristol-db'
+        const db = getFirestore(app, "bristol-db");
+
         // Formateador de fechas
-        function formatDate(dateStr) {
-            if (!dateStr) return 'N/A';
+        function formatDate(dateValue) {
+            if (!dateValue) return 'N/A';
             try {
-                const date = new Date(dateStr);
+                // si es de firestore, tiene toDate()
+                const date = (typeof dateValue.toDate === 'function') ? dateValue.toDate() : new Date(dateValue);
                 return date.toLocaleString('es-MX', {
                     day: '2-digit',
                     month: 'short',
@@ -313,79 +331,72 @@
                     hour12: true
                 });
             } catch (e) {
-                return dateStr;
+                return String(dateValue);
             }
         }
 
-        async function loadData() {
-            const tbody = document.getElementById('logs-body');
-            tbody.innerHTML = '<tr><td colspan="4" class="loading">Cargando registros...</td></tr>';
+        const tbody = document.getElementById('logs-body');
+        const q = query(collection(db, "access_logs"), orderBy("Timestamp", "desc"));
 
-            try {
-                const res = await fetch('/api/antena/logs');
-                if (!res.ok) throw new Error('Error de red');
-                const data = await res.json();
+        onSnapshot(q, (snapshot) => {
+            const total = snapshot.size;
+            document.getElementById('total-registros').textContent = total;
 
-                document.getElementById('total-registros').textContent = data.length;
-
-                if (data.length === 0) {
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="4">
-                                <div class="empty-state">
-                                    <span class="material-icons-round">inbox</span>
-                                    <h3>No hay registros</h3>
-                                    <p>Aún no se ha detectado ningún acceso por antena.</p>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                    return;
-                }
-
-                tbody.innerHTML = '';
-                data.forEach(log => {
-                    const tr = document.createElement('tr');
-                    
-                    const nameCell = document.createElement('td');
-                    nameCell.style.fontWeight = '500';
-                    nameCell.textContent = log.Nombre || 'Desconocido';
-                    
-                    const epcCell = document.createElement('td');
-                    epcCell.style.fontFamily = 'monospace';
-                    epcCell.style.color = 'var(--text-secondary)';
-                    epcCell.textContent = log.EPCID || '-';
-                    
-                    const statusCell = document.createElement('td');
-                    const badge = document.createElement('span');
-                    badge.className = 'badge badge-success';
-                    badge.textContent = log.Equipo || 'Registrado';
-                    statusCell.appendChild(badge);
-                    
-                    const timeCell = document.createElement('td');
-                    timeCell.textContent = formatDate(log.Timestamp);
-
-                    tr.appendChild(nameCell);
-                    tr.appendChild(epcCell);
-                    tr.appendChild(statusCell);
-                    tr.appendChild(timeCell);
-                    
-                    tbody.appendChild(tr);
-                });
-            } catch (error) {
-                console.error(error);
+            if (total === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="4" class="loading" style="color: #ef4444;">
-                            Error al cargar los datos. Intenta nuevamente.
+                        <td colspan="4">
+                            <div class="empty-state">
+                                <span class="material-icons-round">inbox</span>
+                                <h3>No hay registros</h3>
+                                <p>Aún no se ha detectado ningún acceso por antena.</p>
+                            </div>
                         </td>
                     </tr>
                 `;
+                return;
             }
-        }
 
-        // Cargar datos al inicio
-        document.addEventListener('DOMContentLoaded', loadData);
+            tbody.innerHTML = '';
+            snapshot.forEach(doc => {
+                const log = doc.data();
+                const tr = document.createElement('tr');
+                
+                const nameCell = document.createElement('td');
+                nameCell.style.fontWeight = '500';
+                nameCell.textContent = log.Nombre || 'Desconocido';
+                
+                const epcCell = document.createElement('td');
+                epcCell.style.fontFamily = 'monospace';
+                epcCell.style.color = 'var(--text-secondary)';
+                epcCell.textContent = log.EPCID || '-';
+                
+                const statusCell = document.createElement('td');
+                const badge = document.createElement('span');
+                badge.className = 'badge badge-success';
+                badge.textContent = log.Equipo || 'Registrado';
+                statusCell.appendChild(badge);
+                
+                const timeCell = document.createElement('td');
+                timeCell.textContent = formatDate(log.Timestamp);
+
+                tr.appendChild(nameCell);
+                tr.appendChild(epcCell);
+                tr.appendChild(statusCell);
+                tr.appendChild(timeCell);
+                
+                tbody.appendChild(tr);
+            });
+        }, (error) => {
+            console.error(error);
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="loading" style="color: #ef4444;">
+                        Error al cargar datos en tiempo real. Quizá falten permisos.
+                    </td>
+                </tr>
+            `;
+        });
     </script>
 </body>
 </html>
