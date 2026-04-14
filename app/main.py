@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from app.routers import guests, scanner, dashboard
+from app.routers import guests, scanner, dashboard, antena
 import os
 
 app = FastAPI(title="MSTCH Digital | QR-Access Manager")
@@ -11,6 +11,7 @@ app = FastAPI(title="MSTCH Digital | QR-Access Manager")
 app.include_router(guests.router)
 app.include_router(scanner.router)
 app.include_router(dashboard.router)
+app.include_router(antena.router)
 
 # Static Files
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
@@ -37,11 +38,14 @@ async def read_invitados(request: Request):
 async def read_descarga_qrs(request: Request):
     return templates.TemplateResponse(request=request, name="descarga_qrs.html")
 
-
 @app.get("/capturas")
 async def read_capturas(request: Request):
     return templates.TemplateResponse(request=request, name="capturas.html")
-@app.get("/bienvenida")
 
+@app.get("/bienvenida")
 async def read_bienvenida(request: Request):
     return templates.TemplateResponse(request=request, name="bienvenida.html")
+
+@app.get("/acceso-antena")
+async def read_acceso_antena(request: Request):
+    return templates.TemplateResponse(request=request, name="acceso_antena.html")
