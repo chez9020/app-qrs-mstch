@@ -354,12 +354,18 @@ async def update_guest_status(uuid: str, body: GuestStatusUpdate):
             raise HTTPException(status_code=404, detail="Guest not found")
         
         updates = {"status": body.status}
+        now = datetime.now()
+        
         if body.status == "valid":
             updates["scan_timestamp"] = firestore.DELETE_FIELD
+            updates["last_welcome_timestamp"] = firestore.DELETE_FIELD
         elif body.status == "checked_in":
+            # Siempre actualizamos el last_welcome_timestamp para disparar la pantalla
+            updates["last_welcome_timestamp"] = now
+            
             d = doc.to_dict()
             if "scan_timestamp" not in d:
-                updates["scan_timestamp"] = datetime.now()
+                updates["scan_timestamp"] = now
                 
         doc_ref.update(updates)
         return {"status": "success", "message": "Status updated successfully"}
