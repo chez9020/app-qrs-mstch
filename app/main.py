@@ -49,3 +49,7 @@ async def read_bienvenida(request: Request):
 @app.get("/acceso-antena")
 async def read_acceso_antena(request: Request):
     return templates.TemplateResponse(request=request, name="acceso_antena.html")
+
+@app.get("/users-antenna")
+async def read_users_antenna(request: Request):
+    return templates.TemplateResponse(request=request, name="users-antenna.html")

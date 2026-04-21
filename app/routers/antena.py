@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from typing import List
+from pydantic import BaseModel
 from google.cloud import firestore
 import os
 
@@ -49,5 +50,39 @@ async def delete_all_logs():
         
         batch.commit()
         return {"status": "success", "message": f"Se borraron {deleted_count} registros."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+@router.get("/users")
+async def get_bristol_users():
+    try:
+        project_id = os.getenv('GOOGLE_CLOUD_PROJECT', 'shaq-brand-bot')
+        db = firestore.Client(project=project_id, database="bristol-db")
+        users_ref = db.collection("users_bristol")
+        docs = users_ref.stream()
+        
+        users = []
+        for doc in docs:
+            d = doc.to_dict()
+            d["id_doc"] = doc.id  # Guardamos el ID del documento para poder editarlo
+            users.append(d)
+        return users
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+class UserUpdate(BaseModel):
+    nombre: str
+
+@router.put("/users/{doc_id}")
+async def update_bristol_user(doc_id: str, body: UserUpdate):
+    try:
+        project_id = os.getenv('GOOGLE_CLOUD_PROJECT', 'shaq-brand-bot')
+        db = firestore.Client(project=project_id, database="bristol-db")
+        doc_ref = db.collection("users_bristol").document(doc_id)
+        
+        if not doc_ref.get().exists:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+            
+        doc_ref.update({"Nombre": body.nombre})
+        return {"status": "success", "message": "Nombre actualizado"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
