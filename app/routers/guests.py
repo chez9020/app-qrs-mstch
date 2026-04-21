@@ -359,6 +359,8 @@ async def update_guest_status(uuid: str, body: GuestStatusUpdate):
         if body.status == "valid":
             updates["scan_timestamp"] = firestore.DELETE_FIELD
             updates["last_welcome_timestamp"] = firestore.DELETE_FIELD
+            updates["avatar_url"] = firestore.DELETE_FIELD
+            updates["last_avatar_timestamp"] = firestore.DELETE_FIELD
         elif body.status == "checked_in":
             # Siempre actualizamos el last_welcome_timestamp para disparar la pantalla
             updates["last_welcome_timestamp"] = now
